@@ -1,6 +1,6 @@
 # HireLoop — Product Requirements Document
 
-**Authors:**Universe of Innovation 
+**Authors:** Universe of Innovation 
 
 ---
 
