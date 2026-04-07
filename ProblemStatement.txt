@@ -1,0 +1,38 @@
+#26ENHL3: Problem Statement 3
+🏢 HireLoop — End-to-End Campus Recruitment Portal
+The Challenge: Build a complete campus placement management system connecting
+students, college placement cells, and recruiting companies — with AI-powered resume
+analysis and mock interview features.
+Core Features You Must Build:
+Three User Roles
+● Student: Profile, resume upload, job applications, interview preparation
+● Recruiter (Company): Post jobs, view applicants, shortlist, schedule interviews
+● Placement Cell (Admin): Manage all companies, approve job posts, view student
+stats, generate reports
+Student Side
+● Build and download a resume directly from the platform (select template, fill
+sections, export as PDF)
+● AI Resume Analyser: upload resume → get ATS score, missing keywords,
+improvement suggestions
+● Apply to posted jobs with one click
+● Track application status: Applied → Shortlisted → Interview Scheduled → Offer →
+Rejected
+● AI Mock Interview: role-specific questions, answer evaluation, session summary
+Recruiter Side
+● Post job openings: role, eligibility (CGPA, branch, batch), deadline, salary range
+● View all applicants with filters (CGPA, branch, skills)
+● Shortlist applicants and schedule interview slots
+● Send automated email notifications on status changes
+Placement Cell Side
+● Approve or reject company registrations
+● Dashboard: total students placed, companies registered, packages offered
+● Generate placement report by branch, batch, or company (downloadable)
+● Announcement board: post notices visible to all students
+Payments
+● Companies pay a listing fee to post jobs (sandbox checkout)
+● Students can upgrade to Premium: AI interview unlimited + priority visibility to
+recruiters
+AI Features
+● Resume scoring against a job description (match percentage)
+● Auto-generate cover letter draft from resume + job description
+● Smart job recommendations based on student skills and past applications
