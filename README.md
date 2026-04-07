@@ -121,7 +121,7 @@ HireLoop solves these challenges through automation, analytics, and AI-assisted 
 ---
 
 ## 🏗 System Architecture
-
+```
 
 Client (Next.js)
 │
@@ -140,7 +140,7 @@ Database (PostgreSQL)
 ▼
 AI APIs / External Services
 
-
+```
 ---
 
 ## ⚙️ Installation
@@ -196,6 +196,7 @@ CLOUD_STORAGE_KEY=
 ```
 ---
 ## 📁 Project Structure
+```
 hireloop/
 │
 ├── client/                 # Frontend (Next.js)
@@ -213,6 +214,7 @@ hireloop/
 │   └── utils/
 │
 └── README.md
+```
 ---
 ## 🔌 API Modules
 
