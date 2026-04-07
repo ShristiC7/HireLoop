@@ -136,7 +136,7 @@ AI APIs / External Services
 
 ```bash
 git clone https://github.com/ShristiC7/HireLoop.git
-cd hireloop
+cd HireLoop
 ```
 ### 2️⃣ Install Dependencies
 Backend
@@ -184,7 +184,7 @@ CLOUD_STORAGE_KEY=
 ---
 ## 📁 Project Structure
 ```
-hireloop/
+HireLoop/
 │
 ├── client/                 # Frontend (Next.js)
 │   ├── components/
