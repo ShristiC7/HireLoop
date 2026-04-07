@@ -9,7 +9,6 @@ The platform digitizes the entire placement lifecycle — from resume creation a
 ## 📌 Table of Contents
 
 - [Overview](#-overview)
-- [Problem Statement](#-problem-statement)
 - [Key Features](#-key-features)
 - [User Roles](#-user-roles)
 - [AI Capabilities](#-ai-capabilities)
@@ -37,19 +36,6 @@ It combines a traditional placement portal with modern AI features such as:
 - Interview simulations
 - Job matching intelligence
 - Automated placement analytics
-
----
-
-## ❗ Problem Statement
-
-Campus recruitment processes are often:
-
-- Manual and spreadsheet-driven
-- Lacking resume guidance for students
-- Inefficient for recruiters to filter candidates
-- Difficult for placement cells to analyze outcomes
-
-HireLoop solves these challenges through automation, analytics, and AI-assisted decision-making.
 
 ---
 
