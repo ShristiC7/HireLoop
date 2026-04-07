@@ -215,20 +215,26 @@ hireloop/
 └── README.md
 ---
 ## 🔌 API Modules
-Authentication API
-Student Profile API
-Resume Builder API
-Job Management API
-Application Tracking API
-Interview Scheduling API
-AI Analysis API
-Payment API
-Admin Analytics API
+
+- Authentication API  
+- Student Profile API  
+- Resume Builder API  
+- Job Management API  
+- Application Tracking API  
+- Interview Scheduling API  
+- AI Analysis API  
+- Payment API  
+- Admin Analytics API  
+
 ---
+
 ## 🚀 Future Enhancements
-Video interview analysis (AI)
-Skill gap prediction engine
-Multi-college SaaS support
-Recruiter AI auto-shortlisting
+
+- Video interview analysis (AI)
+- Skill gap prediction engine
+- Multi-college SaaS support
+- Recruiter AI auto-shortlisting
+- Placement performance forecasting
+- Mobile application
 Placement performance forecasting
 Mobile application
