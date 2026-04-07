@@ -20,8 +20,6 @@ The platform digitizes the entire placement lifecycle — from resume creation a
 - [Project Structure](#-project-structure)
 - [API Modules](#-api-modules)
 - [Future Enhancements](#-future-enhancements)
-- [Contributing](#-contributing)
-- [License](#-license)
 
 ---
 
@@ -152,33 +150,52 @@ AI APIs / External Services
 ```bash
 git clone https://github.com/ShristiC7/HireLoop.git
 cd hireloop
-2️⃣ Install Dependencies
+```
+### 2️⃣ Install Dependencies
 Backend
+
+```bash
 cd server
 npm install
+
+```
 Frontend
+
+```bash
 cd client
 npm install
-3️⃣ Run Development Servers
+
+```
+### 3️⃣ Run Development Servers
 
 Backend:
 
+```bash
 npm run dev
 
+```
 Frontend:
 
+```bash
 npm run dev
-🔐 Environment Variables
+
+```
+---
+### 🔐 Environment Variables
 
 Create a .env file in the server directory:
 
+```bash
 PORT=5000
 DATABASE_URL=
 JWT_SECRET=
 OPENAI_API_KEY=
 PAYMENT_SECRET_KEY=
 CLOUD_STORAGE_KEY=
-📁 Project Structure
+
+```
+---
+## 📁 Project Structure
 hireloop/
 │
 ├── client/                 # Frontend (Next.js)
@@ -196,7 +213,8 @@ hireloop/
 │   └── utils/
 │
 └── README.md
-🔌 API Modules
+---
+## 🔌 API Modules
 Authentication API
 Student Profile API
 Resume Builder API
@@ -206,7 +224,8 @@ Interview Scheduling API
 AI Analysis API
 Payment API
 Admin Analytics API
-🚀 Future Enhancements
+---
+## 🚀 Future Enhancements
 Video interview analysis (AI)
 Skill gap prediction engine
 Multi-college SaaS support
