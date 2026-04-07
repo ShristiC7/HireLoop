@@ -1,8 +1,6 @@
 # HireLoop — Product Requirements Document
-**Version:** 1.0  
-**Date:** April 2026  
-**Classification:** Internal — Engineering & Product  
-**Authors:** HireLoop Product Team  
+
+**Authors:**Universe of Innovation 
 
 ---
 
