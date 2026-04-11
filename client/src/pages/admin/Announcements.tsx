@@ -45,7 +45,7 @@ export default function Announcements() {
         isPinned,
         targetRole: targetRole || null,
       };
-      const res = await api.post<{ data: Announcement }>(  "/admin/announcements", payload);
+      const res = await api.post<{ data: Announcement }>("/admin/announcements", payload);
       setAnnouncements((prev) => [res.data, ...prev]);
       setTitle("");
       setContent("");
