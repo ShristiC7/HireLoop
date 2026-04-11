@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
-import { useGetAdminDashboard, useGetPlacementStats } from "@workspace/api-client-react";
+import { useGetAdminDashboard, useGetPlacementStats, useListStudents } from "@workspace/api-client-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { BarChart3, PieChart as PieIcon, TrendingUp, Download, FileText, Users } from "lucide-react";
+import { BarChart3, PieChart as PieIcon, TrendingUp, Download, FileText, Users, GraduationCap } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from "recharts";
 import { useToast } from "@/hooks/use-toast";
 
@@ -46,6 +46,24 @@ function DownloadButton({ label, href, icon: Icon }: { label: string; href: stri
 export default function AdminPlacements() {
   const { data: dashboard } = useGetAdminDashboard();
   const { data: stats } = useGetPlacementStats();
+  const { data: allStudents } = useListStudents({});
+
+  const batchWise = Object.values(
+    (allStudents ?? []).reduce<Record<string, { batch: string; total: number; placed: number; avgPackage: number; pkgSum: number }>>((acc, s) => {
+      const b = s.batch ?? "Unknown";
+      if (!acc[b]) acc[b] = { batch: b, total: 0, placed: 0, avgPackage: 0, pkgSum: 0 };
+      acc[b].total++;
+      if (s.placementStatus === "placed") {
+        acc[b].placed++;
+        acc[b].pkgSum += Number(s.packageLpa ?? 0);
+      }
+      return acc;
+    }, {})
+  ).map(b => ({
+    ...b,
+    rate: b.total > 0 ? Math.round((b.placed / b.total) * 100) : 0,
+    avgPackage: b.placed > 0 ? parseFloat((b.pkgSum / b.placed).toFixed(1)) : 0,
+  })).sort((a, b) => a.batch.localeCompare(b.batch));
 
   return (
     <DashboardLayout requiredRole="admin">
@@ -167,6 +185,63 @@ export default function AdminPlacements() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Batch Analytics */}
+        <div className="p-6 rounded-2xl bg-card border border-card-border">
+          <div className="flex items-center gap-2 mb-5">
+            <GraduationCap size={16} className="text-accent" />
+            <h3 className="font-semibold text-sm">Batch-wise Placement Analytics</h3>
+          </div>
+          {batchWise.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">No student data available yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-xs text-muted-foreground border-b border-border">
+                    <th className="text-left pb-2">Batch Year</th>
+                    <th className="text-right pb-2">Total Students</th>
+                    <th className="text-right pb-2">Placed</th>
+                    <th className="text-right pb-2">Placement %</th>
+                    <th className="text-right pb-2">Avg Package (LPA)</th>
+                    <th className="pb-2 pl-4">Rate Bar</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {batchWise.map((b, i) => (
+                    <motion.tr
+                      key={b.batch}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="text-sm"
+                      data-testid={`batch-row-${b.batch}`}
+                    >
+                      <td className="py-2.5 font-semibold flex items-center gap-1.5">
+                        <GraduationCap size={12} className="text-accent" /> {b.batch}
+                      </td>
+                      <td className="py-2.5 text-right text-muted-foreground">{b.total}</td>
+                      <td className="py-2.5 text-right text-green-400 font-medium">{b.placed}</td>
+                      <td className="py-2.5 text-right font-bold">{b.rate}%</td>
+                      <td className="py-2.5 text-right text-green-400">{b.avgPackage > 0 ? `${b.avgPackage}` : "—"}</td>
+                      <td className="py-2.5 pl-4">
+                        <div className="h-2 w-32 rounded-full bg-muted overflow-hidden">
+                          <motion.div
+                            className="h-full rounded-full"
+                            style={{ background: COLORS[i % COLORS.length] }}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${b.rate}%` }}
+                            transition={{ duration: 0.8, delay: i * 0.05 }}
+                          />
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>

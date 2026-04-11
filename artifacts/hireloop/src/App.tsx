@@ -22,6 +22,7 @@ import RecruiterDashboard from "@/pages/recruiter/Dashboard";
 import RecruiterJobs from "@/pages/recruiter/Jobs";
 import PostJob from "@/pages/recruiter/PostJob";
 import RecruiterPayment from "@/pages/recruiter/Payment";
+import RecruiterProfile from "@/pages/recruiter/Profile";
 
 import AdminDashboard from "@/pages/admin/Dashboard";
 import AdminStudents from "@/pages/admin/Students";
@@ -57,6 +58,7 @@ function Router() {
       <Route path="/recruiter/jobs" component={RecruiterJobs} />
       <Route path="/recruiter/jobs/new" component={PostJob} />
       <Route path="/recruiter/payment" component={RecruiterPayment} />
+      <Route path="/recruiter/profile" component={RecruiterProfile} />
 
       {/* Admin */}
       <Route path="/admin/dashboard" component={AdminDashboard} />

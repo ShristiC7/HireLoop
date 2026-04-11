@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowRight, Brain, Briefcase, BarChart3, CheckCircle, Zap, Users, TrendingUp, Shield } from "lucide-react";
+import { ArrowRight, Brain, Briefcase, BarChart3, CheckCircle, Zap, Users, TrendingUp, Shield, User } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const features = [
@@ -190,6 +190,41 @@ export default function Landing() {
                 </div>
                 <h3 className="font-semibold text-foreground mb-2">{f.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-24 px-6 border-y border-border/50 bg-card/20">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-serif">How it <span className="gradient-text">works</span></h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">From sign-up to placement offer in four simple steps.</p>
+          </div>
+          <div className="grid md:grid-cols-4 gap-6 relative">
+            <div className="hidden md:block absolute top-8 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+            {[
+              { step: "01", icon: User, title: "Create Profile", desc: "Sign up as student, recruiter, or admin. Fill your academic info and skills in minutes." },
+              { step: "02", icon: Brain, title: "AI-Power Your Resume", desc: "Upload your resume. Get an ATS score, keyword gaps, and instant improvement suggestions." },
+              { step: "03", icon: Briefcase, title: "Apply to Jobs", desc: "Browse verified campus listings filtered by your CGPA and branch. Apply with one click." },
+              { step: "04", icon: TrendingUp, title: "Track & Get Placed", desc: "Follow your application status live. Accept offers and let the placement cell update your record." },
+            ].map((item, i) => (
+              <motion.div
+                key={item.step}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.12 }}
+                className="flex flex-col items-center text-center"
+              >
+                <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/20 flex items-center justify-center mb-4 z-10">
+                  <item.icon size={22} className="text-primary" />
+                  <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center">{item.step}</span>
+                </div>
+                <h3 className="font-semibold text-sm mb-2">{item.title}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </div>
