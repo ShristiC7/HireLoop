@@ -19,23 +19,77 @@ import CompanyApproval from "./pages/admin/CompanyApproval";
 import Announcements from "./pages/admin/Announcements";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30_000,
+    },
+  },
+});
 
-function ProtectedRoute({ children, allowedRole }: { children: React.ReactNode; allowedRole: string }) {
-  const { isLoggedIn, role } = useAuth();
+// Protected route: checks login + role match
+function ProtectedRoute({
+  children,
+  allowedRole,
+}: {
+  children: React.ReactNode;
+  allowedRole: string; // lowercase: "student" | "recruiter" | "admin"
+}) {
+  const { isLoggedIn, role, isLoading } = useAuth();
+
+  // Show nothing while session restore is in progress
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-gray-500 text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!isLoggedIn) return <Navigate to="/" replace />;
+  // Wrong role → redirect to their own dashboard
   if (role !== allowedRole) return <Navigate to={`/${role}`} replace />;
   return <>{children}</>;
 }
 
 function AppRoutes() {
-  const { isLoggedIn, role } = useAuth();
+  const { isLoggedIn, role, isLoading } = useAuth();
+
+  // Wait for session check before rendering login vs. dashboard
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-gray-500 text-sm">Loading HireLoop...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Routes>
-      <Route path="/" element={isLoggedIn ? <Navigate to={`/${role}`} replace /> : <Login />} />
+      {/* Root: redirect logged-in users to their dashboard */}
+      <Route
+        path="/"
+        element={
+          isLoggedIn ? <Navigate to={`/${role}`} replace /> : <Login />
+        }
+      />
 
-      <Route path="/student" element={<ProtectedRoute allowedRole="student"><DashboardLayout /></ProtectedRoute>}>
+      {/* Student routes */}
+      <Route
+        path="/student"
+        element={
+          <ProtectedRoute allowedRole="student">
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<StudentDashboard />} />
         <Route path="jobs" element={<JobListings />} />
         <Route path="resume" element={<ResumeBuilder />} />
@@ -43,13 +97,29 @@ function AppRoutes() {
         <Route path="interview" element={<MockInterview />} />
       </Route>
 
-      <Route path="/recruiter" element={<ProtectedRoute allowedRole="recruiter"><DashboardLayout /></ProtectedRoute>}>
+      {/* Recruiter routes */}
+      <Route
+        path="/recruiter"
+        element={
+          <ProtectedRoute allowedRole="recruiter">
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<RecruiterDashboard />} />
         <Route path="post" element={<PostJob />} />
         <Route path="applicants" element={<Applicants />} />
       </Route>
 
-      <Route path="/admin" element={<ProtectedRoute allowedRole="admin"><DashboardLayout /></ProtectedRoute>}>
+      {/* Admin routes */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRole="admin">
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<AdminDashboard />} />
         <Route path="companies" element={<CompanyApproval />} />
         <Route path="announcements" element={<Announcements />} />
