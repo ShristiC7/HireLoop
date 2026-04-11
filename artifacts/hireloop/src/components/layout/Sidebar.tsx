@@ -20,6 +20,7 @@ const studentNav = [
 
 const recruiterNav = [
   { href: "/recruiter/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/recruiter/profile", icon: Building, label: "Company Profile" },
   { href: "/recruiter/jobs", icon: Briefcase, label: "My Jobs" },
   { href: "/recruiter/jobs/new", icon: Zap, label: "Post a Job" },
   { href: "/recruiter/payment", icon: CreditCard, label: "Payments" },

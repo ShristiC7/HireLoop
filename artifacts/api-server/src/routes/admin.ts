@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, studentsTable, recruitersTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { requireAuth, requireRole, type AuthRequest } from "../middlewares/auth";
 import { ApproveRecruiterBody, ApproveRecruiterParams, ListStudentsQueryParams } from "@workspace/api-zod";
 
@@ -54,6 +54,38 @@ router.put("/admin/recruiters/:recruiterId/approve", requireAuth, requireRole("a
     .returning();
 
   res.json(updated);
+});
+
+router.put("/admin/students/:studentId/placement", requireAuth, requireRole("admin"), async (req: AuthRequest, res): Promise<void> => {
+  const studentId = parseInt(req.params.studentId as string, 10);
+  if (isNaN(studentId)) {
+    res.status(400).json({ error: "Invalid student ID" });
+    return;
+  }
+
+  const { placementStatus, placedCompany, packageLpa } = req.body;
+
+  if (!placementStatus || !["unplaced", "placed", "internship"].includes(placementStatus)) {
+    res.status(400).json({ error: "Invalid placement status" });
+    return;
+  }
+
+  const [student] = await db.select().from(studentsTable).where(eq(studentsTable.id, studentId));
+  if (!student) {
+    res.status(404).json({ error: "Student not found" });
+    return;
+  }
+
+  const updateData: Record<string, unknown> = { placementStatus };
+  if (placedCompany !== undefined) updateData.placedCompany = placedCompany;
+  if (packageLpa !== undefined) updateData.packageLpa = Number(packageLpa);
+
+  const [updated] = await db.update(studentsTable)
+    .set(updateData)
+    .where(eq(studentsTable.id, studentId))
+    .returning();
+
+  res.json({ ...updated, totalApplications: 0, shortlisted: 0, offers: 0 });
 });
 
 export default router;
