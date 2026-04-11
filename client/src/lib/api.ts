@@ -8,7 +8,11 @@
  * - On failed refresh, clears state and redirects to /
  */
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+// Use relative path (/api/v1) in development — Vite proxies it to localhost:5000
+// In production, the env var should point to the deployed API
+const BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== "undefined" ? "/api/v1" : "http://localhost:5000/api/v1");
 
 // ── In-memory access token store ──────────────────────────────────────────────
 // Stored in memory (not localStorage) to protect against XSS

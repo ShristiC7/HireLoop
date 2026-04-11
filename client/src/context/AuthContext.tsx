@@ -81,10 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     (async () => {
       try {
         // First try silent refresh to get a new accessToken
-        const refreshRes = await fetch(
-          `${import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1"}/auth/refresh`,
-          { method: "POST", credentials: "include" }
-        );
+        const refreshRes = await fetch("/api/v1/auth/refresh", {
         if (refreshRes.ok) {
           const refreshData = await refreshRes.json();
           if (refreshData?.data?.accessToken) {
