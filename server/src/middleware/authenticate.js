@@ -68,3 +68,26 @@ export function requireEmailVerified(req, res, next) {
     }
     next();
 }
+
+// ── optionalAuthenticate ──────────────────────────────────────────────────────
+// Attaches req.user if a valid Bearer token is present, but never blocks.
+// Use for public endpoints that have enhanced behaviour when logged in.
+export async function optionalAuthenticate(req, res, next) {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) return next();
+
+        const token = authHeader.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+
+        const user = await prisma.user.findUnique({
+            where: { id: decoded.userId },
+            select: { id: true, email: true, role: true, isActive: true, isEmailVerified: true },
+        });
+
+        if (user && user.isActive) req.user = user;
+    } catch {
+        // Invalid/expired token — just continue as anonymous
+    }
+    next();
+}
