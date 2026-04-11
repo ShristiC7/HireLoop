@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { useForm } from "react-hook-form";
 import { useGetResume, useUpdateResume, getGetResumeQueryKey } from "@workspace/api-client-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Save, FileText, Briefcase, GraduationCap, Code, Award } from "lucide-react";
+import { Plus, Trash2, Save, FileText, Briefcase, GraduationCap, Code, Award, Download } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 interface ExperienceEntry { title: string; company: string; duration: string; description: string; }
@@ -19,6 +18,7 @@ export default function ResumeBuilder() {
   const updateResume = useUpdateResume();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const printRef = useRef<HTMLDivElement>(null);
 
   const [summary, setSummary] = useState("");
   const [experience, setExperience] = useState<ExperienceEntry[]>([]);
@@ -40,14 +40,7 @@ export default function ResumeBuilder() {
 
   const handleSave = () => {
     updateResume.mutate({
-      data: {
-        summary,
-        experience,
-        education,
-        projects,
-        certifications,
-        languages: [],
-      }
+      data: { summary, experience, education, projects, certifications, languages: [] }
     }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetResumeQueryKey() });
@@ -55,6 +48,32 @@ export default function ResumeBuilder() {
       },
       onError: () => toast({ title: "Failed to save", variant: "destructive" }),
     });
+  };
+
+  const handlePrintPDF = () => {
+    const printContent = printRef.current;
+    if (!printContent) return;
+    const originalBody = document.body.innerHTML;
+    document.body.innerHTML = `
+      <style>
+        body { font-family: 'Inter', sans-serif; color: #111; background: white; margin: 0; padding: 20px; }
+        h2 { font-size: 22px; font-weight: 700; margin: 0 0 4px; }
+        p { margin: 0; }
+        h3 { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #4f46e5; margin: 0 0 6px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+        .section { margin-bottom: 14px; }
+        .entry-title { font-size: 12px; font-weight: 600; }
+        .entry-sub { font-size: 11px; color: #6b7280; }
+        .entry-desc { font-size: 11px; color: #374151; margin-top: 2px; }
+        .tag { display: inline-block; font-size: 10px; color: #4f46e5; background: #eef2ff; padding: 1px 6px; border-radius: 99px; margin-right: 4px; }
+        .cert { display: inline-block; font-size: 10px; background: #eef2ff; color: #4f46e5; border-radius: 99px; padding: 2px 8px; margin: 2px; }
+        .header { text-align: center; border-bottom: 2px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 16px; }
+        @media print { body { padding: 0; } }
+      </style>
+      ${printContent.innerHTML}
+    `;
+    window.print();
+    document.body.innerHTML = originalBody;
+    window.location.reload();
   };
 
   const addExp = () => setExperience([...experience, { title: "", company: "", duration: "", description: "" }]);
@@ -84,22 +103,32 @@ export default function ResumeBuilder() {
             <h1 className="text-2xl font-bold font-serif">Resume Builder</h1>
             <p className="text-muted-foreground text-sm">ATS Score: <span className="text-primary font-semibold">{resume?.atsScore ?? 0}%</span></p>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleSave}
-            disabled={updateResume.isPending}
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold disabled:opacity-60"
-            data-testid="button-save-resume"
-          >
-            <Save size={14} />{updateResume.isPending ? "Saving..." : "Save Resume"}
-          </motion.button>
+          <div className="flex gap-3">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handlePrintPDF}
+              className="flex items-center gap-2 px-4 py-2.5 bg-secondary/50 border border-border text-foreground rounded-xl text-sm font-semibold hover:bg-secondary/70 transition-colors"
+              data-testid="button-export-pdf"
+            >
+              <Download size={14} /> Export PDF
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleSave}
+              disabled={updateResume.isPending}
+              className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold disabled:opacity-60"
+              data-testid="button-save-resume"
+            >
+              <Save size={14} />{updateResume.isPending ? "Saving..." : "Save Resume"}
+            </motion.button>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Editor */}
           <div className="space-y-4">
-            {/* Section Nav */}
             <div className="flex gap-2 flex-wrap">
               {sections.map(s => (
                 <button
@@ -113,7 +142,6 @@ export default function ResumeBuilder() {
               ))}
             </div>
 
-            {/* Section Content */}
             <div className="p-5 rounded-2xl bg-card border border-card-border space-y-4">
               {activeSection === "summary" && (
                 <div>
@@ -192,7 +220,7 @@ export default function ResumeBuilder() {
                 <div className="space-y-3">
                   <h3 className="text-sm font-semibold">Certifications</h3>
                   <div className="flex gap-2">
-                    <Input placeholder="e.g. AWS Solutions Architect" value={newCert} onChange={e => setNewCert(e.target.value)} className="text-sm" data-testid="input-certification" />
+                    <Input placeholder="e.g. AWS Solutions Architect" value={newCert} onChange={e => setNewCert(e.target.value)} onKeyDown={e => e.key === "Enter" && addCert()} className="text-sm" data-testid="input-certification" />
                     <button onClick={addCert} className="px-3 py-2 bg-primary text-white rounded-lg text-xs font-semibold" data-testid="button-add-cert"><Plus size={14} /></button>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -209,65 +237,66 @@ export default function ResumeBuilder() {
           </div>
 
           {/* Live Preview */}
-          <div className="p-6 rounded-2xl bg-white text-gray-900 border border-border shadow-xl h-fit sticky top-6">
-            <div className="text-center border-b border-gray-200 pb-4 mb-4">
-              <h2 className="text-xl font-bold text-gray-900">{user?.name ?? "Your Name"}</h2>
-              <p className="text-sm text-gray-600 mt-1">{user?.email}</p>
+          <div ref={printRef} className="p-6 rounded-2xl bg-white text-gray-900 border border-border shadow-xl h-fit sticky top-6 print:shadow-none print:border-none print:p-0">
+            <div className="header text-center border-b border-gray-200 pb-4 mb-4">
+              <h2 className="text-xl font-bold text-gray-900 entry-title">{user?.name ?? "Your Name"}</h2>
+              <p className="entry-sub text-sm text-gray-600 mt-1">{user?.email}</p>
             </div>
 
             {summary && (
-              <div className="mb-4">
+              <div className="section mb-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-1">Summary</h3>
-                <p className="text-xs text-gray-700 leading-relaxed">{summary}</p>
+                <p className="entry-desc text-xs text-gray-700 leading-relaxed">{summary}</p>
               </div>
             )}
 
             {experience.length > 0 && (
-              <div className="mb-4">
+              <div className="section mb-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-2">Experience</h3>
                 {experience.map((exp, i) => (
                   <div key={i} className="mb-2">
                     <div className="flex justify-between">
-                      <p className="text-xs font-semibold">{exp.title || "Title"}</p>
-                      <p className="text-xs text-gray-500">{exp.duration}</p>
+                      <p className="entry-title text-xs font-semibold">{exp.title || "Title"}</p>
+                      <p className="entry-sub text-xs text-gray-500">{exp.duration}</p>
                     </div>
-                    <p className="text-xs text-gray-600">{exp.company}</p>
-                    {exp.description && <p className="text-xs text-gray-500 mt-1">{exp.description}</p>}
+                    <p className="entry-sub text-xs text-gray-600">{exp.company}</p>
+                    {exp.description && <p className="entry-desc text-xs text-gray-500 mt-1">{exp.description}</p>}
                   </div>
                 ))}
               </div>
             )}
 
             {education.length > 0 && (
-              <div className="mb-4">
+              <div className="section mb-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-2">Education</h3>
                 {education.map((edu, i) => (
                   <div key={i} className="mb-1">
-                    <p className="text-xs font-semibold">{edu.degree}</p>
-                    <p className="text-xs text-gray-600">{edu.institution} · {edu.year}</p>
+                    <p className="entry-title text-xs font-semibold">{edu.degree}</p>
+                    <p className="entry-sub text-xs text-gray-600">{edu.institution} · {edu.year}</p>
                   </div>
                 ))}
               </div>
             )}
 
             {projects.length > 0 && (
-              <div className="mb-4">
+              <div className="section mb-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-2">Projects</h3>
                 {projects.map((proj, i) => (
                   <div key={i} className="mb-2">
-                    <p className="text-xs font-semibold">{proj.title}</p>
-                    <p className="text-xs text-gray-600">{proj.description}</p>
-                    {proj.tech.length > 0 && <p className="text-xs text-indigo-600 mt-0.5">{proj.tech.join(" · ")}</p>}
+                    <p className="entry-title text-xs font-semibold">{proj.title}</p>
+                    <p className="entry-desc text-xs text-gray-600">{proj.description}</p>
+                    {proj.tech.length > 0 && <p className="text-xs text-indigo-600 mt-0.5">{proj.tech.map((t, j) => <span key={j} className="tag">{t}</span>)}</p>}
+                    {proj.link && <a href={proj.link} className="text-xs text-indigo-500">{proj.link}</a>}
                   </div>
                 ))}
               </div>
             )}
 
             {certifications.length > 0 && (
-              <div>
+              <div className="section">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-2">Certifications</h3>
                 <div className="flex flex-wrap gap-1">
-                  {certifications.map((c, i) => <span key={i} className="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">{c}</span>)}
+                  {certifications.map((c, i) => <span key={i} className="cert text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">{c}</span>)}
                 </div>
               </div>
             )}
