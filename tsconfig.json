@@ -11,6 +11,11 @@
     },
     {
       "path": "./lib/api-zod"
+    },
+    {
+      "compilerOptions": {
+        "skipLibCheck": true
+      }
     }
   ]
 }
