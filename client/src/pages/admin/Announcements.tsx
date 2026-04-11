@@ -25,7 +25,7 @@ export default function Announcements() {
 
   const fetchAnnouncements = () => {
     api
-      .get<{ data: Announcement[] }>("/admin/announcements")
+      .get<{ data: Announcement[]; meta: unknown }>("/admin/announcements")
       .then((res) => setAnnouncements(res.data))
       .catch(() => {})
       .finally(() => setIsLoading(false));
@@ -45,7 +45,7 @@ export default function Announcements() {
         isPinned,
         targetRole: targetRole || null,
       };
-      const res = await api.post<{ data: Announcement }>("/admin/announcements", payload);
+      const res = await api.post<{ data: Announcement }>(  "/admin/announcements", payload);
       setAnnouncements((prev) => [res.data, ...prev]);
       setTitle("");
       setContent("");
