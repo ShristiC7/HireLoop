@@ -8,8 +8,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Plus, Trash2, Briefcase } from "lucide-react";
-import { useState } from "react";
+import { Plus, Trash2, Briefcase, CreditCard, ArrowRight, Lock } from "lucide-react";
+import { useState, useEffect } from "react";
+
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const BRANCHES = ["CSE", "ECE", "EE", "ME", "CE", "IT", "Chemical", "Aerospace"];
 const JOB_TYPES = ["fulltime", "internship", "contract"] as const;
@@ -32,9 +34,17 @@ export default function PostJob() {
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
   const [selectedBranches, setSelectedBranches] = useState<string[]>(BRANCHES);
+  const [hasListingFee, setHasListingFee] = useState<boolean | null>(null);
   const createJob = useCreateJob();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    fetch(`${BASE}/api/payments/check-listing-fee`, { credentials: "include" })
+      .then(r => r.json())
+      .then(d => setHasListingFee(d.hasValidListingFee ?? false))
+      .catch(() => setHasListingFee(false));
+  }, []);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -74,6 +84,46 @@ export default function PostJob() {
       onError: () => toast({ title: "Failed to post job", variant: "destructive" }),
     });
   };
+
+  if (hasListingFee === null) {
+    return (
+      <DashboardLayout requiredRole="recruiter">
+        <div className="flex items-center justify-center h-64">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!hasListingFee) {
+    return (
+      <DashboardLayout requiredRole="recruiter">
+        <div className="max-w-md mx-auto text-center py-16 space-y-6">
+          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+            <Lock size={36} className="text-primary" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold font-serif">Payment Required</h2>
+            <p className="text-muted-foreground mt-2 text-sm">A one-time listing fee of ₹999 is required to post a campus job. Your listing is valid for 30 days.</p>
+          </div>
+          <div className="p-4 rounded-xl bg-card border border-card-border text-left space-y-2 text-sm">
+            <div className="flex items-center gap-2 text-green-400"><span>✓</span> Unlimited applicants</div>
+            <div className="flex items-center gap-2 text-green-400"><span>✓</span> AI candidate matching</div>
+            <div className="flex items-center gap-2 text-green-400"><span>✓</span> Interview scheduling tools</div>
+            <div className="flex items-center gap-2 text-green-400"><span>✓</span> Real-time tracking</div>
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setLocation("/recruiter/payment")}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-xl font-semibold"
+          >
+            <CreditCard size={16} /> Pay Listing Fee (₹999) <ArrowRight size={16} />
+          </motion.button>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout requiredRole="recruiter">
