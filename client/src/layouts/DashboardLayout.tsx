@@ -5,7 +5,7 @@ import Footer from "../components/Footer";
 import {
   LayoutDashboard, Briefcase, FileText, ClipboardList,
   MessageSquare, Users, PlusCircle, Building2, Megaphone,
-  LogOut, Menu, X
+  LogOut, Menu
 } from "lucide-react";
 import { useState } from "react";
 
@@ -37,8 +37,8 @@ export default function DashboardLayout() {
   const links = role === "student" ? studentLinks : role === "recruiter" ? recruiterLinks : adminLinks;
   const roleLabel = role === "student" ? "Student" : role === "recruiter" ? "Recruiter" : "Admin";
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/");
   };
 
