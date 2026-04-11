@@ -78,7 +78,23 @@ export default function StudentDashboard() {
         {/* Header */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-1">
           <p className="text-muted-foreground text-sm">{greeting},</p>
-          <h1 className="text-2xl font-bold font-serif">{user?.name} <span className="text-muted-foreground font-normal text-base">— your placement journey</span></h1>
+          <div className="flex flex-col sm:flex-row sm:items-end gap-1 sm:gap-4">
+            <h1 className="text-2xl font-bold font-serif">{user?.name}</h1>
+            {!isLoading && dashboard && (
+              <motion.p
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-sm text-muted-foreground"
+              >
+                {(dashboard.placementReadiness ?? 0) >= 80
+                  ? "You're placement-ready! Keep it up."
+                  : (dashboard.placementReadiness ?? 0) >= 50
+                  ? `You're ${dashboard.placementReadiness}% placement-ready — a few more steps to go.`
+                  : "Let's build your placement profile — start with your resume!"}
+              </motion.p>
+            )}
+          </div>
         </motion.div>
 
         {isLoading ? (
