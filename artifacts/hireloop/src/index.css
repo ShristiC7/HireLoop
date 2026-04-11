@@ -67,62 +67,76 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* DARK MODE (default — futuristic career OS) */
+/* LAVENDER PEACHY LIGHT MODE (default) */
 :root {
-  --button-outline: rgba(255,255,255,.10);
-  --badge-outline: rgba(255,255,255,.05);
-  --opaque-button-border-intensity: 9;
-  --elevate-1: rgba(255,255,255,.04);
-  --elevate-2: rgba(255,255,255,.09);
+  --button-outline: rgba(0,0,0,.10);
+  --badge-outline: rgba(0,0,0,.05);
+  --opaque-button-border-intensity: -8;
+  --elevate-1: rgba(0,0,0,.03);
+  --elevate-2: rgba(0,0,0,.07);
 
-  --background: 222 47% 5%;
-  --foreground: 213 31% 91%;
-  --border: 217 33% 16%;
-  --card: 222 47% 8%;
-  --card-foreground: 213 31% 91%;
-  --card-border: 217 33% 18%;
-  --sidebar: 222 47% 6%;
-  --sidebar-foreground: 213 31% 91%;
-  --sidebar-border: 217 33% 14%;
-  --sidebar-primary: 239 84% 67%;
+  /* Lavender peachy backgrounds */
+  --background: 290 40% 98%;
+  --foreground: 265 35% 18%;
+  --border: 285 25% 86%;
+  --card: 0 0% 100%;
+  --card-foreground: 265 35% 18%;
+  --card-border: 285 30% 89%;
+
+  /* Sidebar — soft lavender tint */
+  --sidebar: 285 35% 96%;
+  --sidebar-foreground: 265 35% 18%;
+  --sidebar-border: 285 25% 88%;
+  --sidebar-primary: 260 62% 58%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 217 33% 14%;
-  --sidebar-accent-foreground: 213 31% 91%;
-  --sidebar-ring: 239 84% 67%;
-  --popover: 222 47% 8%;
-  --popover-foreground: 213 31% 91%;
-  --popover-border: 217 33% 18%;
-  --primary: 239 84% 67%;
+  --sidebar-accent: 285 30% 92%;
+  --sidebar-accent-foreground: 265 35% 18%;
+  --sidebar-ring: 260 62% 58%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 265 35% 18%;
+  --popover-border: 285 25% 86%;
+
+  /* Primary — lavender purple */
+  --primary: 260 62% 58%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 217 33% 14%;
-  --secondary-foreground: 213 31% 91%;
-  --muted: 217 33% 12%;
-  --muted-foreground: 215 20% 55%;
-  --accent: 186 89% 50%;
-  --accent-foreground: 222 47% 5%;
-  --destructive: 0 84% 60%;
+
+  /* Secondary — very light lavender */
+  --secondary: 285 30% 93%;
+  --secondary-foreground: 265 35% 18%;
+
+  --muted: 285 28% 94%;
+  --muted-foreground: 265 20% 52%;
+
+  /* Accent — warm peach */
+  --accent: 22 88% 62%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 80% 58%;
   --destructive-foreground: 0 0% 100%;
-  --input: 217 33% 18%;
-  --ring: 239 84% 67%;
-  --chart-1: 239 84% 67%;
-  --chart-2: 186 89% 50%;
-  --chart-3: 142 76% 50%;
-  --chart-4: 38 92% 60%;
-  --chart-5: 340 82% 60%;
+  --input: 285 25% 88%;
+  --ring: 260 62% 58%;
+
+  /* Charts */
+  --chart-1: 260 62% 58%;
+  --chart-2: 22 88% 62%;
+  --chart-3: 142 60% 45%;
+  --chart-4: 38 85% 55%;
+  --chart-5: 330 75% 58%;
 
   --app-font-sans: 'Inter', sans-serif;
   --app-font-serif: 'Sora', sans-serif;
   --app-font-mono: 'JetBrains Mono', monospace;
   --radius: .75rem;
 
-  --shadow-2xs: 0 1px 2px 0 rgba(0,0,0,.4);
-  --shadow-xs: 0 1px 3px 0 rgba(0,0,0,.4);
-  --shadow-sm: 0 2px 6px 0 rgba(0,0,0,.5), 0 1px 2px -1px rgba(0,0,0,.3);
-  --shadow: 0 4px 12px 0 rgba(0,0,0,.5), 0 2px 4px -1px rgba(0,0,0,.3);
-  --shadow-md: 0 8px 20px 0 rgba(0,0,0,.6), 0 4px 8px -2px rgba(0,0,0,.3);
-  --shadow-lg: 0 16px 32px 0 rgba(0,0,0,.6), 0 8px 16px -4px rgba(0,0,0,.4);
-  --shadow-xl: 0 24px 48px 0 rgba(0,0,0,.7), 0 12px 24px -6px rgba(0,0,0,.5);
-  --shadow-2xl: 0 48px 96px 0 rgba(0,0,0,.8);
+  --shadow-2xs: 0 1px 2px 0 rgba(120,80,160,.06);
+  --shadow-xs: 0 1px 3px 0 rgba(120,80,160,.08);
+  --shadow-sm: 0 2px 6px 0 rgba(120,80,160,.08), 0 1px 2px -1px rgba(120,80,160,.06);
+  --shadow: 0 4px 12px 0 rgba(120,80,160,.10), 0 2px 4px -1px rgba(120,80,160,.06);
+  --shadow-md: 0 8px 20px 0 rgba(120,80,160,.12), 0 4px 8px -2px rgba(120,80,160,.08);
+  --shadow-lg: 0 16px 32px 0 rgba(120,80,160,.12), 0 8px 16px -4px rgba(120,80,160,.08);
+  --shadow-xl: 0 24px 48px 0 rgba(120,80,160,.14), 0 12px 24px -6px rgba(120,80,160,.10);
+  --shadow-2xl: 0 48px 96px 0 rgba(120,80,160,.16);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
@@ -142,58 +156,6 @@
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
-.light {
-  --button-outline: rgba(0,0,0,.10);
-  --badge-outline: rgba(0,0,0,.05);
-  --opaque-button-border-intensity: -8;
-  --elevate-1: rgba(0,0,0,.03);
-  --elevate-2: rgba(0,0,0,.08);
-
-  --background: 220 33% 97%;
-  --foreground: 222 47% 11%;
-  --border: 217 33% 88%;
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --card-border: 217 33% 90%;
-  --sidebar: 220 33% 94%;
-  --sidebar-foreground: 222 47% 11%;
-  --sidebar-border: 217 33% 86%;
-  --sidebar-primary: 239 84% 60%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 220 33% 91%;
-  --sidebar-accent-foreground: 222 47% 11%;
-  --sidebar-ring: 239 84% 60%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
-  --popover-border: 217 33% 88%;
-  --primary: 239 84% 60%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 220 33% 91%;
-  --secondary-foreground: 222 47% 11%;
-  --muted: 220 33% 93%;
-  --muted-foreground: 215 20% 40%;
-  --accent: 186 89% 40%;
-  --accent-foreground: 0 0% 100%;
-  --destructive: 0 84% 55%;
-  --destructive-foreground: 0 0% 100%;
-  --input: 217 33% 88%;
-  --ring: 239 84% 60%;
-  --chart-1: 239 84% 60%;
-  --chart-2: 186 89% 40%;
-  --chart-3: 142 76% 40%;
-  --chart-4: 38 92% 50%;
-  --chart-5: 340 82% 55%;
-
-  --shadow-2xs: 0 1px 2px 0 rgba(0,0,0,.05);
-  --shadow-xs: 0 1px 3px 0 rgba(0,0,0,.08);
-  --shadow-sm: 0 2px 6px 0 rgba(0,0,0,.08), 0 1px 2px -1px rgba(0,0,0,.06);
-  --shadow: 0 4px 12px 0 rgba(0,0,0,.08), 0 2px 4px -1px rgba(0,0,0,.06);
-  --shadow-md: 0 8px 20px 0 rgba(0,0,0,.10), 0 4px 8px -2px rgba(0,0,0,.08);
-  --shadow-lg: 0 16px 32px 0 rgba(0,0,0,.12), 0 8px 16px -4px rgba(0,0,0,.08);
-  --shadow-xl: 0 24px 48px 0 rgba(0,0,0,.14), 0 12px 24px -6px rgba(0,0,0,.10);
-  --shadow-2xl: 0 48px 96px 0 rgba(0,0,0,.16);
-}
-
 @layer base {
   * {
     @apply border-border;
@@ -203,16 +165,16 @@
   }
 }
 
-/* Gradient text utility */
+/* Gradient text utility — lavender to peach */
 .gradient-text {
-  background: linear-gradient(135deg, #6366f1 0%, #22d3ee 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #f97316 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .gradient-text-warm {
-  background: linear-gradient(135deg, #6366f1 0%, #a78bfa 50%, #22d3ee 100%);
+  background: linear-gradient(135deg, #a78bfa 0%, #c084fc 50%, #f97316 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
