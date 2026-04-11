@@ -120,6 +120,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
+      <Route path="/admin" element={<ProtectedRoute allowedRole="admin"><DashboardLayout /></ProtectedRoute>}>
         <Route index element={<AdminDashboard />} />
         <Route path="companies" element={<CompanyApproval />} />
         <Route path="announcements" element={<Announcements />} />
