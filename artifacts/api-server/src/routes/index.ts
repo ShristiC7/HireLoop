@@ -9,6 +9,8 @@ import aiRouter from "./ai";
 import announcementsRouter from "./announcements";
 import dashboardRouter from "./dashboard";
 import adminRouter from "./admin";
+import adminReportsRouter from "./admin/reports";
+import paymentsRouter from "./payments";
 
 const router: IRouter = Router();
 
@@ -22,5 +24,7 @@ router.use(aiRouter);
 router.use(announcementsRouter);
 router.use(dashboardRouter);
 router.use(adminRouter);
+router.use(adminReportsRouter);
+router.use(paymentsRouter);
 
 export default router;

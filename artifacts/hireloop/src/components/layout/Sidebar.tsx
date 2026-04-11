@@ -3,7 +3,7 @@ import { useAuth } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard, User, FileText, Briefcase, ClipboardList,
-  Brain, Mic, BarChart3, Users, Building, Megaphone, LogOut, Zap, ChevronRight
+  Brain, Mic, BarChart3, Users, Building, Megaphone, LogOut, Zap, ChevronRight, Crown, CreditCard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,12 +15,14 @@ const studentNav = [
   { href: "/student/applications", icon: ClipboardList, label: "Applications" },
   { href: "/student/ai-resume", icon: Brain, label: "AI Resume" },
   { href: "/student/ai-interview", icon: Mic, label: "AI Interview" },
+  { href: "/student/premium", icon: Crown, label: "Go Premium" },
 ];
 
 const recruiterNav = [
   { href: "/recruiter/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/recruiter/jobs", icon: Briefcase, label: "My Jobs" },
   { href: "/recruiter/jobs/new", icon: Zap, label: "Post a Job" },
+  { href: "/recruiter/payment", icon: CreditCard, label: "Payments" },
 ];
 
 const adminNav = [
