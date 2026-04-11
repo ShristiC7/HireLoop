@@ -70,5 +70,8 @@
     "vaul": "^1.1.2",
     "vite": "^8.0.8",
     "zod": "catalog:"
+  },
+  "dependencies": {
+    "rollup": "^4.60.1"
   }
 }
