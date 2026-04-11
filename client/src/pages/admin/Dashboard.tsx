@@ -82,7 +82,7 @@ export default function AdminDashboard() {
         />
         <StatCard
           title="Pending Approvals"
-          value={data?.pendingRecruiters ?? 0}
+          value={data?.overview?.pendingRecruiters ?? 0}
           icon={<Building2 size={20} />}
           color={
             (data?.overview?.pendingRecruiters ?? 0) > 0
