@@ -82,6 +82,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         // First try silent refresh to get a new accessToken
         const refreshRes = await fetch("/api/v1/auth/refresh", {
+          method: "POST",
+          credentials: "include",
+        });
         if (refreshRes.ok) {
           const refreshData = await refreshRes.json();
           if (refreshData?.data?.accessToken) {
