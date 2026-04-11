@@ -1,2 +1,2 @@
-export * as Api from "./generated/api";
-export * as Types from "./generated/types";
+export * from "./generated/api";
+export * from "./generated/types";
