@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import Login from "./pages/Login";
 import DashboardLayout from "./layouts/DashboardLayout";
 import StudentDashboard from "./pages/student/Dashboard";
+import Profile from "./pages/student/Profile";
 import JobListings from "./pages/student/JobListings";
 import ResumeBuilder from "./pages/student/ResumeBuilder";
 import ApplicationTracker from "./pages/student/ApplicationTracker";
@@ -91,6 +92,7 @@ function AppRoutes() {
         }
       >
         <Route index element={<StudentDashboard />} />
+        <Route path="profile" element={<Profile />} />
         <Route path="jobs" element={<JobListings />} />
         <Route path="resume" element={<ResumeBuilder />} />
         <Route path="tracker" element={<ApplicationTracker />} />

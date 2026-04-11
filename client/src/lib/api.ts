@@ -53,8 +53,9 @@ async function request<T = unknown>(
       return request<T>(endpoint, { ...options, _isRetry: true });
     }
     tokenStore.set(null);
-    // Redirect to login
-    if (typeof window !== "undefined") {
+    // Redirect to login only if not already on the login page
+    // This prevents infinite reload loops on unauthenticated access.
+    if (typeof window !== "undefined" && window.location.pathname !== "/") {
       window.location.href = "/";
     }
     return Promise.reject(new Error("Session expired. Please log in again."));

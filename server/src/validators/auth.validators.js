@@ -17,9 +17,9 @@ export const registerSchema = z.object({
                 "Password must contain uppercase, lowercase, and a number"
             ),
 
-        role: z.enum(["STUDENT", "RECRUITER"], {
+        role: z.enum(["STUDENT", "RECRUITER", "ADMIN"], {
             required_error: "Role is required",
-            invalid_type_error: "Role must be STUDENT or RECRUITER",
+            invalid_type_error: "Role must be STUDENT, RECRUITER, or ADMIN",
         }),
 
         // Optional on register, required in profile completion step

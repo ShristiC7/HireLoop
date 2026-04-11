@@ -34,51 +34,7 @@ export const applyJobSchema = z.object({
 export const resumeBuilderSchema = z.object({
     body: z.object({
         title: z.string().trim().min(1).max(100).optional(),
-        builderData: z.object({
-            personalInfo: z.object({
-                fullName: z.string().optional(),
-                email: z.string().email().optional(),
-                phone: z.string().optional(),
-                location: z.string().optional(),
-                linkedinUrl: z.string().optional(),
-                githubUrl: z.string().optional(),
-                portfolioUrl: z.string().optional(),
-                summary: z.string().max(600).optional(),
-            }).optional(),
-            education: z.array(z.object({
-                institution: z.string(),
-                degree: z.string(),
-                field: z.string(),
-                startYear: z.number(),
-                endYear: z.number().optional(),
-                cgpa: z.number().optional(),
-                description: z.string().optional(),
-            })).optional(),
-            experience: z.array(z.object({
-                company: z.string(),
-                role: z.string(),
-                startDate: z.string(),
-                endDate: z.string().optional(),
-                isCurrent: z.boolean().optional(),
-                description: z.string(),
-                skills: z.array(z.string()).optional(),
-            })).optional(),
-            projects: z.array(z.object({
-                name: z.string(),
-                description: z.string(),
-                techStack: z.array(z.string()).optional(),
-                liveUrl: z.string().optional(),
-                repoUrl: z.string().optional(),
-            })).optional(),
-            certifications: z.array(z.object({
-                name: z.string(),
-                issuer: z.string(),
-                date: z.string().optional(),
-                url: z.string().optional(),
-            })).optional(),
-            skills: z.array(z.string()).optional(),
-            achievements: z.array(z.string()).optional(),
-        }).optional(),
+        builderData: z.any().optional(),
     }),
 });
 

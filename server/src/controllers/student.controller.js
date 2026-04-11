@@ -8,6 +8,9 @@ export async function getMyProfile(req, res) {
     const profile = await prisma.studentProfile.findUnique({
         where: { userId: req.user.id },
         include: {
+            user: {
+                select: { email: true, role: true, isEmailVerified: true },
+            },
             resumes: {
                 select: { id: true, title: true, isDefault: true, atsScore: true, createdAt: true },
                 orderBy: { createdAt: "desc" },

@@ -4,7 +4,7 @@ import { z } from "zod";
 export const createJobSchema = z.object({
     body: z.object({
         title: z.string().trim().min(3, "Job title must be at least 3 characters"),
-        description: z.string().trim().min(50, "Job description must be at least 50 characters"),
+        description: z.string().trim().min(5, "Job description must be at least 5 characters"),
         responsibilities: z.string().trim().optional(),
         requirements: z.string().trim().optional(),
 

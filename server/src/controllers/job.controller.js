@@ -159,7 +159,7 @@ export async function getRecommendedJobs(req, res) {
 
             // Eligibility filters (handle empty arrays = no restriction)
             OR: [
-                { eligibleBranches: { isEmpty: true } },
+                { eligibleBranches: { equals: [] } },
                 { eligibleBranches: { has: profile.department } },
             ],
 

@@ -44,10 +44,10 @@ app.use(
 );
 
 // ── General Rate Limiting ─────────────────────────────────────────────────────
-// Limits each IP to 100 requests per 15 minutes to prevent abuse
+// Limits each IP to 1000 requests per 15 minutes to prevent abuse
 const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 1000, // 1000 requests per 15 minutes
     standardHeaders: true,
     legacyHeaders: false,
     message: { success: false, message: "Too many requests, please try again later." },

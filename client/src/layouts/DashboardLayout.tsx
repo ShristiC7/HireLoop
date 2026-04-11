@@ -5,12 +5,13 @@ import Footer from "../components/Footer";
 import {
   LayoutDashboard, Briefcase, FileText, ClipboardList,
   MessageSquare, Users, PlusCircle, Building2, Megaphone,
-  LogOut, Menu
+  LogOut, Menu, User
 } from "lucide-react";
 import { useState } from "react";
 
 const studentLinks = [
   { to: "/student", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
+  { to: "/student/profile", icon: <User size={18} />, label: "My Profile" },
   { to: "/student/jobs", icon: <Briefcase size={18} />, label: "Job Listings" },
   { to: "/student/resume", icon: <FileText size={18} />, label: "Resume Builder" },
   { to: "/student/tracker", icon: <ClipboardList size={18} />, label: "Application Tracker" },

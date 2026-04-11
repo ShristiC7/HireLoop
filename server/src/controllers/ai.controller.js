@@ -16,7 +16,7 @@ import { BadRequest, NotFound, Forbidden } from "../middleware/errorHandler.js";
 // ── AI-specific rate limiter (prevents expensive API abuse) ───────────────────
 export const aiRateLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
-    max: 20, // 20 AI calls per hour for free users
+    max: 150, // 150 AI calls per hour for free users
     keyGenerator: (req) => req.user?.id || req.ip,
     skip: async (req) => {
         // Premium students get higher limits
@@ -338,12 +338,8 @@ export async function submitAnswer(req, res) {
     sendSuccess(res, {
         message: "Answer evaluated.",
         data: {
-            questionIndex,
-            score: evaluation.score,
-            feedback: evaluation.feedback,
-            strengths: evaluation.strengths,
-            improvements: evaluation.improvements,
-            betterAnswerHint: evaluation.betterAnswerHint,
+            ...session,
+            questions, // Return updated session object with new questions metadata for the frontend
         },
     });
 }

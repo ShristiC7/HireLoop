@@ -66,6 +66,15 @@ export async function register(req, res) {
                     status: "PENDING", // must be approved by admin
                 },
             });
+        } else if (role === "ADMIN") {
+            await tx.adminProfile.create({
+                data: {
+                    userId: newUser.id,
+                    firstName: firstName || "Platform",
+                    lastName: lastName || "Admin",
+                    college: "HireLoop College",
+                },
+            });
         }
 
         return newUser;
