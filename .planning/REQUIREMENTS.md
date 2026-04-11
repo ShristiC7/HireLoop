@@ -28,4 +28,16 @@
 - Complete UI redesigns
 
 ## Traceability
-*(To be populated by Roadmap)*
+| REQ-ID | Phase | Location |
+|---|---|---|
+| JOB-01 | Phase 2 |  |
+| JOB-02 | Phase 2 |  |
+| JOB-03 | Phase 1 |  |
+| MOCK-01 | Phase 2 |  |
+| MOCK-02 | Phase 1 |  |
+| MOCK-03 | Phase 2 |  |
+| RATE-01 | Phase 1 |  |
+| RATE-02 | Phase 1 |  |
+| RATE-03 | Phase 1 |  |
+| USER-01 | Phase 1 |  |
+| USER-02 | Phase 2 |  |
