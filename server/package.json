@@ -1,5 +1,5 @@
 {
-  "name": "HireLoop",
+  "name": "server",
   "version": "1.0.0",
   "description": "HireLoop - AI-powered Campus Recruitment Portal Backend",
   "main": "src/index.js",
