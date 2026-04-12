@@ -51,6 +51,8 @@ It combines a traditional placement portal with modern AI features such as:
 - AI Mock Interview preparation
 - Smart job recommendations
 - Cover letter auto-generation
+<img width="1915" height="991" alt="image" src="https://github.com/user-attachments/assets/672867d5-4259-4939-90c1-27953f3296f3" />
+
 
 ---
 
@@ -61,6 +63,7 @@ It combines a traditional placement portal with modern AI features such as:
 - Candidate shortlisting
 - Interview scheduling
 - Automated email notifications
+
 
 ---
 
