@@ -133,7 +133,7 @@ Backend API (Node.js + Express)
 └── Payment Service
 │
 ▼
-Database (PostgreSQL)
+Database (Supabase)
 │
 ▼
 AI APIs / External Services
@@ -167,7 +167,7 @@ AI APIs / External Services
                            │
               ┌────────────▼────────────┐
               │     Data Layer          │
-              │  PostgreSQL (Primary)   │
+              │  Supabase (Primary)   │
               │  Redis (Cache/Sessions) │
               └────────────┬────────────┘
                            │
