@@ -9,10 +9,10 @@ The platform digitizes the entire placement lifecycle — from resume creation a
 ## Team Details:
 Name: Universe of Innovation
 
-| Member | Role | Job |
-|------|------------|-----------|
-| Shubham | Team Lead | Frontend  |
-| Shristi Choudhary | Member | Backend , Ai Integrations , Database |
+| Member | Role  |
+|------|----------------------|
+| Shubham |  Frontend  |
+| Shristi Choudhary |  Backend , Ai Integrations , Database |
 
 ---
 ## 📌 Table of Contents
@@ -264,7 +264,13 @@ HireLoop/
 - Admin Analytics API  
 
 ---
+## 🌐 Live Deployment
 
+🚀 Frontend: [https://hire-loop.onrender.com/](https://hire-loop.onrender.com/)
+
+⚙️ Backend:[ https://hireloop-api.onrender.com](https://hireloop-platform.onrender.com/)
+
+---- 
 ## 🚀 Future Enhancements
 
 - Video interview analysis (AI)
