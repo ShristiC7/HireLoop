@@ -271,6 +271,18 @@ HireLoop/
 ⚙️ Backend:[ https://hireloop-api.onrender.com](https://hireloop-platform.onrender.com/)
 
 ---- 
+## ⚠️ Known Limitations
+
+HireLoop is currently in active development and certain production-level integrations are still being stabilized.
+
+- 💳 Payment Gateway Integration Pending
+Razorpay integration is not fully connected yet. Payment flows are currently in sandbox/mock mode.
+- 🏫 Placement Cell Dashboard Stability Issues
+The admin/placement cell dashboard is partially non-functional and requires backend alignment for full feature execution.
+- 🤖 AI Question Generation Rate Limits
+AI-powered interview question generation may occasionally fail due to API rate limits or quota exhaustion under heavy usage.
+
+-----
 ## 🚀 Future Enhancements
 
 - Video interview analysis (AI)
