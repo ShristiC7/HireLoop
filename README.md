@@ -110,10 +110,10 @@ It combines a traditional placement portal with modern AI features such as:
 | Frontend | Next.js / React |
 | Styling | Tailwind CSS |
 | Backend | Node.js + Express |
-| Database | PostgreSQL |
+| Database | Supabse |
 | Authentication | JWT + Role-Based Access |
 | AI Integration | LLM APIs |
-| File Storage | Cloud Storage |
+| File Storage | Supabase |
 | Payments | Stripe / Razorpay Sandbox |
 
 ---
