@@ -22,9 +22,11 @@ router.post("/auth/register", async (req, res): Promise<void> => {
   }
 
   const { email, password, name, role } = parsed.data;
+  logger.info({ email, role }, "Registration attempt");
 
   const existing = await db.select().from(usersTable).where(eq(usersTable.email, email));
   if (existing.length > 0) {
+    logger.warn({ email }, "Registration failed: Email already exists");
     res.status(400).json({ error: "Email already registered" });
     return;
   }
@@ -66,6 +68,8 @@ router.post("/auth/register", async (req, res): Promise<void> => {
 
   const token = signToken(user.id, user.role);
 
+  logger.info({ userId: user.id, email: user.email, role: user.role }, "New user registered successfully");
+
   res.status(201).json({
     user: {
       id: user.id,
@@ -86,20 +90,25 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   }
 
   const { email, password } = parsed.data;
+  logger.info({ email }, "Login attempt");
   const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email));
 
   if (!user) {
+    logger.warn({ email }, "Login failed: User not found");
     res.status(401).json({ error: "Invalid credentials" });
     return;
   }
 
   const valid = await bcryptjs.compare(password, user.passwordHash);
   if (!valid) {
+    logger.warn({ email }, "Login failed: Invalid password");
     res.status(401).json({ error: "Invalid credentials" });
     return;
   }
 
   const token = signToken(user.id, user.role);
+
+  logger.info({ userId: user.id, email: user.email }, "User logged in successfully");
 
   res.json({
     user: {
@@ -139,7 +148,7 @@ router.get("/auth/me", async (req, res): Promise<void> => {
       name: user.name,
       createdAt: user.createdAt,
     });
-  } catch {
+    logger.error({ error, stack: error instanceof Error ? error.stack : undefined }, "Auth payload verification error");
     res.status(401).json({ error: "Invalid token" });
   }
 });
