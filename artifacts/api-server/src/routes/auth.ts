@@ -24,62 +24,73 @@ router.post("/auth/register", async (req, res): Promise<void> => {
   const { email, password, name, role } = parsed.data;
   logger.info({ email, role }, "Registration attempt");
 
-  const existing = await db.select().from(usersTable).where(eq(usersTable.email, email));
-  if (existing.length > 0) {
-    logger.warn({ email }, "Registration failed: Email already exists");
-    res.status(400).json({ error: "Email already registered" });
-    return;
-  }
+  try {
+    const existing = await db.select().from(usersTable).where(eq(usersTable.email, email));
+    if (existing.length > 0) {
+      logger.warn({ email }, "Registration failed: Email already exists");
+      res.status(400).json({ error: "Email already registered" });
+      return;
+    }
 
-  const passwordHash = await bcryptjs.hash(password, 10);
-  const [user] = await db.insert(usersTable).values({ email, passwordHash, name, role }).returning();
+    const passwordHash = await bcryptjs.hash(password, 10);
+    const [user] = await db.insert(usersTable).values({ email, passwordHash, name, role }).returning();
 
-  if (role === "student") {
-    const [student] = await db.insert(studentsTable).values({
-      userId: user.id,
-      name,
-      email,
-      branch: "CSE",
-      batch: "2025",
-      cgpa: 0,
-      skills: [],
-      placementStatus: "unplaced",
-    }).returning();
+    if (role === "student") {
+      const [student] = await db.insert(studentsTable).values({
+        userId: user.id,
+        name,
+        email,
+        branch: "CSE",
+        batch: "2025",
+        cgpa: 0,
+        skills: [],
+        placementStatus: "unplaced",
+      }).returning();
 
-    await db.insert(resumesTable).values({
-      studentId: student.id,
-      summary: "",
-      experience: [],
-      education: [],
-      projects: [],
-      certifications: [],
-      languages: [],
-      atsScore: 0,
+      await db.insert(resumesTable).values({
+        studentId: student.id,
+        summary: "",
+        experience: [],
+        education: [],
+        projects: [],
+        certifications: [],
+        languages: [],
+        atsScore: 0,
+      });
+    } else if (role === "recruiter") {
+      await db.insert(recruitersTable).values({
+        userId: user.id,
+        name,
+        email,
+        company: "Unknown Company",
+        isApproved: false,
+      });
+    }
+
+    const token = signToken(user.id, user.role);
+
+    logger.info({ userId: user.id, email: user.email, role: user.role }, "New user registered successfully");
+
+    res.status(201).json({
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        name: user.name,
+        createdAt: user.createdAt,
+      },
+      token,
     });
-  } else if (role === "recruiter") {
-    await db.insert(recruitersTable).values({
-      userId: user.id,
-      name,
-      email,
-      company: "Unknown Company",
-      isApproved: false,
-    });
+  } catch (err) {
+    const pgError = err as { code?: string; message?: string; detail?: string; hint?: string };
+    logger.error({ 
+      code: pgError.code, 
+      message: pgError.message, 
+      detail: pgError.detail, 
+      hint: pgError.hint 
+    }, "Registration database error");
+    res.status(500).json({ error: "Registration failed", detail: pgError.message });
   }
-
-  const token = signToken(user.id, user.role);
-
-  logger.info({ userId: user.id, email: user.email, role: user.role }, "New user registered successfully");
-
-  res.status(201).json({
-    user: {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      name: user.name,
-      createdAt: user.createdAt,
-    },
-    token,
-  });
 });
 
 router.post("/auth/login", async (req, res): Promise<void> => {
