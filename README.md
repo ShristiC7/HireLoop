@@ -6,7 +6,14 @@ HireLoop is a full-stack **AI-powered campus placement management platform** des
 The platform digitizes the entire placement lifecycle — from resume creation and job applications to AI interview preparation and placement analytics — within a single ecosystem.
 
 ---
+## Team Details:
 
+| Member | Role | Job |
+|------|------------|-----------|
+| Shubham | Team Lead | Frontend  |
+| Shristi Choudhary | Member | Backend , Ai Integrations , Database |
+
+---
 ## 📌 Table of Contents
 
 - [Overview](#-overview)
