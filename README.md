@@ -11,7 +11,7 @@ Name: Universe of Innovation
 
 | Member | Role  |
 |------|----------------------|
-| Shubham |  Frontend  |
+| Shubham  Verma |  Frontend  |
 | Shristi Choudhary |  Backend , Ai Integrations , Database |
 
 ---
