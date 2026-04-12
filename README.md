@@ -7,6 +7,7 @@ The platform digitizes the entire placement lifecycle — from resume creation a
 
 ---
 ## Team Details:
+Name: Universe of Innovation
 
 | Member | Role | Job |
 |------|------------|-----------|
