@@ -148,6 +148,7 @@ router.get("/auth/me", async (req, res): Promise<void> => {
       name: user.name,
       createdAt: user.createdAt,
     });
+  } catch (error) {
     logger.error({ error, stack: error instanceof Error ? error.stack : undefined }, "Auth payload verification error");
     res.status(401).json({ error: "Invalid token" });
   }
