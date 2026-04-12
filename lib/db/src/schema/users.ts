@@ -4,7 +4,7 @@ import { z } from "zod/v4";
 
 export const userRoleEnum = pgEnum("user_role", ["student", "recruiter", "admin"]);
 
-export const usersTable = pgTable("users", {
+export const usersTable = pgTable("platform_users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
