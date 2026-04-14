@@ -1,5 +1,0 @@
-export function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem("hl_token");
-  if (!token) return {};
-  return { Authorization: `Bearer ${token}` };
-}
