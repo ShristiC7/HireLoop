@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import OAuthCallback from "@/pages/OAuthCallback";
 
 import StudentDashboard from "@/pages/student/Dashboard";
 import StudentProfile from "@/pages/student/Profile";
@@ -44,6 +45,7 @@ function Router() {
       <Route path="/" component={Landing} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
+      <Route path="/auth/callback" component={OAuthCallback} />
 
       {/* Student */}
       <Route path="/student/dashboard" component={StudentDashboard} />
