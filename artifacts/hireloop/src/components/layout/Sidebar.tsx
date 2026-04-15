@@ -13,9 +13,10 @@ const studentNav = [
   { href: "/student/resume", icon: FileText, label: "Resume Builder" },
   { href: "/student/jobs", icon: Briefcase, label: "Jobs" },
   { href: "/student/applications", icon: ClipboardList, label: "Applications" },
+  { href: "/student/announcements", icon: Megaphone, label: "Notice Board" },
   { href: "/student/ai-resume", icon: Brain, label: "AI Resume" },
-  { href: "/student/ai-interview", icon: Mic, label: "AI Interview" },
   { href: "/student/ai-cover-letter", icon: FileText, label: "AI Cover Letter" },
+  { href: "/student/ai-interview", icon: Mic, label: "AI Interview" },
   { href: "/student/premium", icon: Crown, label: "Go Premium" },
 ];
 
