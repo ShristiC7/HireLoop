@@ -3,7 +3,7 @@ import { useAuth } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard, User, FileText, Briefcase, ClipboardList,
-  Brain, Mic, BarChart3, Users, Building, Megaphone, LogOut, Zap, ChevronRight, Crown, CreditCard
+  Brain, Mic, BarChart3, Users, Building, Megaphone, LogOut, Zap, ChevronRight, Crown, CreditCard, X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +34,7 @@ const adminNav = [
   { href: "/admin/announcements", icon: Megaphone, label: "Announcements" },
 ];
 
-function NavItem({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
+function NavItem({ href, icon: Icon, label, onClose }: { href: string; icon: React.ElementType; label: string; onClose?: () => void }) {
   const [location] = useLocation();
   const isActive = location === href || (href !== "/" && location.startsWith(href));
 
@@ -42,6 +42,7 @@ function NavItem({ href, icon: Icon, label }: { href: string; icon: React.Elemen
     <Link href={href}>
       <motion.div
         whileHover={{ x: 2 }}
+        onClick={onClose}
         className={cn(
           "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 group",
           isActive
@@ -58,7 +59,7 @@ function NavItem({ href, icon: Icon, label }: { href: string; icon: React.Elemen
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
 
@@ -74,14 +75,27 @@ export default function Sidebar() {
   return (
     <div className="flex flex-col h-full w-64 bg-sidebar border-r border-sidebar-border">
       <div className="p-5 border-b border-sidebar-border">
-        <Link href="/">
-          <div className="flex items-center gap-2.5 cursor-pointer">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Zap size={16} className="text-white" />
+        <div className="flex items-center justify-between">
+          <Link href="/">
+            <div className="flex items-center gap-2.5 cursor-pointer" onClick={onClose}>
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                <Zap size={16} className="text-white" />
+              </div>
+              <span className="font-bold text-lg tracking-tight gradient-text font-serif">HireLoop</span>
             </div>
-            <span className="font-bold text-lg tracking-tight gradient-text font-serif">HireLoop</span>
-          </div>
-        </Link>
+          </Link>
+          {/* Mobile close button */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all"
+              aria-label="Close menu"
+              data-testid="button-close-mobile-sidebar"
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="p-4 border-b border-sidebar-border">
@@ -98,7 +112,7 @@ export default function Sidebar() {
 
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">
         {navItems.map((item) => (
-          <NavItem key={item.href} {...item} />
+          <NavItem key={item.href} {...item} onClose={onClose} />
         ))}
       </nav>
 
