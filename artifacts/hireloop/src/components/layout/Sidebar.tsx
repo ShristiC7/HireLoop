@@ -15,6 +15,7 @@ const studentNav = [
   { href: "/student/applications", icon: ClipboardList, label: "Applications" },
   { href: "/student/ai-resume", icon: Brain, label: "AI Resume" },
   { href: "/student/ai-interview", icon: Mic, label: "AI Interview" },
+  { href: "/student/ai-cover-letter", icon: FileText, label: "AI Cover Letter" },
   { href: "/student/premium", icon: Crown, label: "Go Premium" },
 ];
 
