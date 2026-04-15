@@ -148,6 +148,49 @@ Be honest and specific. Return ONLY the JSON, no other text.`,
   }
 });
 
+router.post("/ai/cover-letter", requireAuth, requireRole("student"), async (req: AuthRequest, res): Promise<void> => {
+  const { jobDescription, companyName, jobTitle } = req.body;
+  if (!jobDescription || !companyName || !jobTitle) {
+    res.status(400).json({ error: "Missing required fields" });
+    return;
+  }
+
+  const [student] = await db.select().from(studentsTable).where(eq(studentsTable.userId, req.userId!));
+  if (!student) {
+    res.status(404).json({ error: "Student not found" });
+    return;
+  }
+
+  const [resume] = await db.select().from(resumesTable).where(eq(resumesTable.studentId, student.id));
+  
+  const resumeText = resume ? `
+Experience: ${JSON.stringify(resume.experience)}
+Education: ${JSON.stringify(resume.education)}
+Projects: ${JSON.stringify(resume.projects)}` : "No specific resume data.";
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-5-mini",
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert career coach writing professional cover letters. Use the provided student information, resume, and job description to write a tailored, modern, compelling, and professional cover letter. Respond ONLY with the cover letter text, no metadata.",
+        },
+        {
+          role: "user",
+          content: `Write a cover letter for:\nCompany: ${companyName}\nRole: ${jobTitle}\n\nJob Description:\n${jobDescription}\n\nMy Profile:\nName: ${student.name}\nBranch: ${student.branch}\nSkills: ${student.skills.join(", ")}\n\nMy Resume Details:\n${resumeText}`,
+        },
+      ],
+    });
+
+    const letter = completion.choices[0].message.content || "Could not generate cover letter.";
+    res.json({ coverLetter: letter.trim() });
+  } catch (err) {
+    console.error("Cover letter generation failed:", err);
+    res.status(500).json({ error: "Failed to generate cover letter. Please try again." });
+  }
+});
+
 router.post("/ai/mock-interview/start", requireAuth, requireRole("student"), async (req: AuthRequest, res): Promise<void> => {
   const parsed = StartMockInterviewBody.safeParse(req.body);
   if (!parsed.success) {
