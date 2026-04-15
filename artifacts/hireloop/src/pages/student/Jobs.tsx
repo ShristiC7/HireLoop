@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useListJobs, useApplyToJob, getListJobsQueryKey } from "@workspace/api-client-react";
+import { useListJobs, useApplyToJob, getListJobsQueryKey, useGetProfile } from "@workspace/api-client-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { Search, MapPin, DollarSign, Clock, Briefcase, Filter, X, CheckCircle } from "lucide-react";
+import { Search, MapPin, DollarSign, Clock, Briefcase, Filter, X, CheckCircle, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,7 +12,7 @@ import { formatDistanceToNow } from "date-fns";
 const BRANCHES = ["All", "CSE", "ECE", "EE", "ME", "CE", "IT"];
 const JOB_TYPES = ["all", "fulltime", "internship", "contract"];
 
-function JobCard({ job, onApply, applying }: { job: Record<string, unknown>; onApply: (id: number) => void; applying: boolean }) {
+function JobCard({ job, onApply, applying, matchScore }: { job: Record<string, unknown>; onApply: (id: number) => void; applying: boolean; matchScore?: number }) {
   const j = job as { id: number; title: string; company: string; location?: string; salaryMin?: number; salaryMax?: number; jobType: string; eligibleBranches: string[]; minCgpa: number; skills: string[]; deadline: string; applicantCount: number };
 
   return (
@@ -20,10 +20,15 @@ function JobCard({ job, onApply, applying }: { job: Record<string, unknown>; onA
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2 }}
-      className="p-5 rounded-2xl bg-card border border-card-border hover:border-primary/30 transition-all duration-300 flex flex-col gap-3"
+      className="relative p-5 rounded-2xl bg-card border border-card-border hover:border-primary/30 transition-all duration-300 flex flex-col gap-3 overflow-hidden"
       data-testid={`card-job-${j.id}`}
     >
-      <div className="flex items-start justify-between gap-4">
+      {matchScore !== undefined && matchScore > 0 && (
+        <div className="absolute top-0 right-0 bg-gradient-to-l from-primary/20 to-transparent px-4 py-1 text-[10px] font-bold text-primary flex items-center gap-1 rounded-bl-xl">
+          <Sparkles size={10} /> {Math.min(99, matchScore)}% Match
+        </div>
+      )}
+      <div className="flex items-start justify-between gap-4 mt-1">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className={cn("px-2 py-0.5 rounded-md text-xs font-semibold", {
@@ -80,6 +85,7 @@ export default function StudentJobs() {
   const [search, setSearch] = useState("");
   const [branch, setBranch] = useState("All");
   const [jobType, setJobType] = useState("all");
+  const [showRecommendations, setShowRecommendations] = useState(false);
   const [applyingId, setApplyingId] = useState<number | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -90,8 +96,41 @@ export default function StudentJobs() {
   if (branch !== "All") params.branch = branch;
 
   const { data: jobs, isLoading } = useListJobs(params);
+  const { data: profile } = useGetProfile();
 
-  const filtered = (jobs ?? []).filter(j => jobType === "all" || j.jobType === jobType);
+  const sortedAndFiltered = useMemo(() => {
+    let result = (jobs ?? []).filter(j => jobType === "all" || j.jobType === jobType);
+    
+    // Process Recommendation Matching
+    const scoredJobs = result.map(job => {
+      let score = 0;
+      if (profile) {
+        // CGPA check
+        if (profile.cgpa >= job.minCgpa) score += 20;
+        
+        // Branch check
+        if (job.eligibleBranches.includes(profile.branch) || job.eligibleBranches.length === 0) score += 30;
+        
+        // Skills intersection
+        const userSkills = new Set(profile.skills.map((s: string) => s.toLowerCase()));
+        const jobSkills = job.skills.map((s: string) => s.toLowerCase());
+        const matchCount = jobSkills.filter((js: string) => userSkills.has(js)).length;
+        
+        if (jobSkills.length > 0) {
+          score += Math.round((matchCount / jobSkills.length) * 50);
+        } else {
+          score += 20; // Default points if no skills required
+        }
+      }
+      return { ...job, matchScore: score };
+    });
+
+    if (showRecommendations) {
+      // Sort purely by match score descending
+      return scoredJobs.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+    }
+    return scoredJobs;
+  }, [jobs, jobType, profile, showRecommendations]);
 
   const handleApply = (jobId: number) => {
     setApplyingId(jobId);
@@ -112,9 +151,26 @@ export default function StudentJobs() {
   return (
     <DashboardLayout requiredRole="student">
       <div className="max-w-5xl mx-auto space-y-6">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <h1 className="text-2xl font-bold font-serif">Job Board</h1>
-          <p className="text-muted-foreground text-sm mt-1">Browse {filtered.length} open positions</p>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex sm:items-center justify-between flex-col sm:flex-row gap-4">
+          <div>
+            <h1 className="text-2xl font-bold font-serif">Job Board</h1>
+            <p className="text-muted-foreground text-sm mt-1">Browse {sortedAndFiltered.length} open positions</p>
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowRecommendations(!showRecommendations)}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm border",
+              showRecommendations 
+                ? "bg-gradient-to-r from-primary to-accent text-white border-transparent glow-primary" 
+                : "bg-secondary/50 border-border text-foreground hover:bg-secondary/80"
+            )}
+            data-testid="button-toggle-ai"
+          >
+            <Sparkles size={15} />
+            {showRecommendations ? "Showing AI Matches" : "Smart Recommendations"}
+          </motion.button>
         </motion.div>
 
         {/* Filters */}
@@ -159,14 +215,15 @@ export default function StudentJobs() {
           <div className="grid md:grid-cols-2 gap-4">
             {[...Array(6)].map((_, i) => <div key={i} className="h-48 rounded-2xl bg-card animate-pulse" />)}
           </div>
-        ) : filtered.length > 0 ? (
+        ) : sortedAndFiltered.length > 0 ? (
           <div className="grid md:grid-cols-2 gap-4">
-            {filtered.map((job) => (
+            {sortedAndFiltered.map((job) => (
               <JobCard
                 key={job.id}
                 job={job as Record<string, unknown>}
                 onApply={handleApply}
                 applying={applyingId === job.id}
+                matchScore={(job as any).matchScore}
               />
             ))}
           </div>
