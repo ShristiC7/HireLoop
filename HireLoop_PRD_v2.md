@@ -1,14 +1,5 @@
 # HireLoop — Product Requirements Document
-**Version:** 2.1  
-**Status:** Active  
-**Date:** April 2026  
-**Authors:** HireLoop Engineering Team  
 
-### Changelog
-| Version | Date | Changes |
-|---|---|---|
-| 2.0 | April 2026 | Initial v2.0 release — gap analysis, 10 new AI/fullstack features |
-| 2.1 | April 2026 | Added FR-107 Google OAuth, FR-108 Admin sign-in visibility, FR-109 Mobile responsiveness, FR-110 Skills input UX, BUG-001 Profile update fix |
 
 ---
 
