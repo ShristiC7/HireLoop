@@ -8,7 +8,7 @@ import { useLogin } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Zap, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Zap, Eye, EyeOff, ArrowLeft, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const schema = z.object({
@@ -88,8 +88,21 @@ export default function Login() {
                 <ArrowLeft size={14} /> Back to home
               </button>
             </Link>
-            <h1 className="text-2xl font-bold font-serif mb-2">Sign in to HireLoop</h1>
-            <p className="text-muted-foreground text-sm">Enter your credentials to continue</p>
+            <div className="flex items-center gap-3 mb-4">
+              <h1 className="text-2xl font-bold font-serif">Sign in to HireLoop</h1>
+            </div>
+            <p className="text-muted-foreground text-sm mb-3">Enter your credentials to continue</p>
+            {/* FR-108: Placement Cell / Admin login entry point */}
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-chart-3/10 border border-chart-3/20 w-fit"
+              data-testid="admin-login-hint"
+            >
+              <ShieldCheck size={13} className="text-chart-3 shrink-0" />
+              <span className="text-xs text-chart-3 font-medium">Placement Cell / Admin? Use your admin credentials below.</span>
+            </motion.div>
           </div>
 
           <div className="p-6 rounded-2xl bg-card border border-card-border">
@@ -159,10 +172,13 @@ export default function Login() {
           {/* Demo accounts */}
           <div className="mt-4 p-4 rounded-xl bg-muted/30 border border-border/50">
             <p className="text-xs font-semibold text-muted-foreground mb-2">Demo accounts:</p>
-            <div className="space-y-1 text-xs text-muted-foreground">
-              <p>Student: student@demo.com / demo123</p>
-              <p>Recruiter: recruiter@demo.com / demo123</p>
-              <p>Admin: admin@demo.com / demo123</p>
+            <div className="space-y-1.5 text-xs text-muted-foreground">
+              <p>🎓 Student: student@demo.com / demo123</p>
+              <p>🏢 Recruiter: recruiter@demo.com / demo123</p>
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-chart-3/10 border border-chart-3/20 w-fit">
+                <ShieldCheck size={11} className="text-chart-3" />
+                <p className="text-chart-3 font-medium" data-testid="admin-demo-hint">Placement Cell: admin@demo.com / demo123</p>
+              </div>
             </div>
           </div>
         </motion.div>
