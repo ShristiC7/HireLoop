@@ -1,8 +1,9 @@
 import { Router, type IRouter } from "express";
-import { db, applicationsTable, studentsTable, jobsTable, recruitersTable } from "@workspace/db";
+import { db, applicationsTable, studentsTable, jobsTable, recruitersTable, usersTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { requireAuth, requireRole, type AuthRequest } from "../middlewares/auth";
 import { ApplyToJobBody, UpdateApplicationStatusBody, UpdateApplicationStatusParams, GetJobApplicationsParams } from "@workspace/api-zod";
+import { sendApplicationStatusEmail } from "../utils/mailer";
 
 const router: IRouter = Router();
 
@@ -49,6 +50,19 @@ router.post("/applications", requireAuth, requireRole("student"), async (req: Au
     status: "applied",
   }).returning();
 
+  const [job] = await db.select().from(jobsTable).where(eq(jobsTable.id, app.jobId));
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, student.userId));
+
+  if (job && user) {
+    sendApplicationStatusEmail({
+      toName: user.name,
+      toEmail: user.email,
+      jobTitle: job.title,
+      companyName: job.company,
+      status: "applied",
+    }).catch(err => console.error("[MAILER ERROR] Failed to send application confirmation", err));
+  }
+
   res.status(201).json(await enrichApplication(app));
 });
 
@@ -80,6 +94,23 @@ router.put("/applications/:applicationId/status", requireAuth, async (req: AuthR
     .set(updateData)
     .where(eq(applicationsTable.id, params.data.applicationId))
     .returning();
+
+  // Send notification email
+  const [student] = await db.select().from(studentsTable).where(eq(studentsTable.id, updated.studentId));
+  const [job] = await db.select().from(jobsTable).where(eq(jobsTable.id, updated.jobId));
+  if (student && job) {
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, student.userId));
+    if (user) {
+      sendApplicationStatusEmail({
+        toName: user.name,
+        toEmail: user.email,
+        jobTitle: job.title,
+        companyName: job.company,
+        status: updated.status,
+        interviewDate: updated.interviewDate ?? undefined,
+      }).catch(err => console.error("[MAILER ERROR] Failed to send status update email", err));
+    }
+  }
 
   res.json(await enrichApplication(updated));
 });
