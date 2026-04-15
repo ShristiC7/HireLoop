@@ -148,6 +148,51 @@ Be honest and specific. Return ONLY the JSON, no other text.`,
   }
 });
 
+router.post("/ai/cover-letter", requireAuth, requireRole("student"), async (req: AuthRequest, res): Promise<void> => {
+  const { jobDescription } = req.body;
+  if (!jobDescription) {
+    res.status(400).json({ error: "Job description is required" });
+    return;
+  }
+
+  const [student] = await db.select().from(studentsTable).where(eq(studentsTable.userId, req.userId!));
+  if (!student) {
+    res.status(404).json({ error: "Student not found" });
+    return;
+  }
+
+  const [resume] = await db.select().from(resumesTable).where(eq(resumesTable.studentId, student.id));
+  
+  const context = `
+Name: ${student.name}
+Branch: ${student.branch}
+Skills: ${student.skills.join(", ")}
+Resume Summary: ${resume?.summary || "N/A"}
+Experience: ${JSON.stringify(resume?.experience || [])}
+  `.trim();
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-5-mini",
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert career consultant. Write a professional, punchy, and tailored cover letter based on the user's profile and the job description provided. Use a modern tone, highlight relevant skills, and keep it under 300 words. Return only the cover letter text."
+        },
+        {
+          role: "user",
+          content: `User Profile:\n${context}\n\nJob Description:\n${jobDescription}`
+        }
+      ]
+    });
+
+    res.json({ coverLetter: completion.choices[0].message.content });
+  } catch (err) {
+    logger.error(err, "Cover letter generation failed");
+    res.status(500).json({ error: "Failed to generate cover letter" });
+  }
+});
+
 router.post("/ai/mock-interview/start", requireAuth, requireRole("student"), async (req: AuthRequest, res): Promise<void> => {
   const parsed = StartMockInterviewBody.safeParse(req.body);
   if (!parsed.success) {

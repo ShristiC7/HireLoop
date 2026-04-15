@@ -41,7 +41,10 @@ export default function AIInterview() {
   const [totalQuestions, setTotalQuestions] = useState(5);
   const [questionNum, setQuestionNum] = useState(1);
   const [viewSummaryId, setViewSummaryId] = useState<string | null>(null);
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState("");
   const chatRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
 
   const startInterview = useStartMockInterview();
@@ -52,6 +55,45 @@ export default function AIInterview() {
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
   }, [messages]);
+
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = "en-US";
+
+      recognition.onresult = (event: any) => {
+        let interimTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            setAnswer(prev => prev + " " + event.results[i][0].transcript);
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+        setTranscript(interimTranscript);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+        setTranscript("");
+      };
+
+      recognitionRef.current = recognition;
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else {
+      setTranscript("");
+      recognitionRef.current?.start();
+      setIsListening(true);
+    }
+  };
 
   const handleStart = () => {
     startInterview.mutate({ data: { role, level: level as "fresher" | "experienced" | "senior" } }, {
@@ -219,15 +261,33 @@ export default function AIInterview() {
                 {!isComplete && (
                   <div className="p-4 border-t border-border">
                     <div className="flex gap-2">
-                      <textarea
-                        value={answer}
-                        onChange={(e) => setAnswer(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        rows={2}
-                        placeholder="Type your answer... (Enter to send)"
-                        className="flex-1 bg-transparent border border-input rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-                        data-testid="input-answer"
-                      />
+                      <div className="relative flex-1">
+                        <textarea
+                          value={answer}
+                          onChange={(e) => setAnswer(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          rows={2}
+                          placeholder={isListening ? "Listening..." : "Type your answer... (Enter to send)"}
+                          className="w-full bg-transparent border border-input rounded-xl px-4 py-2.5 pr-12 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                          data-testid="input-answer"
+                        />
+                        {transcript && (
+                          <div className="absolute left-4 bottom-2 text-[10px] text-accent animate-pulse">
+                            {transcript}...
+                          </div>
+                        )}
+                        <button 
+                          type="button"
+                          onClick={toggleListening}
+                          className={cn(
+                            "absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all",
+                            isListening ? "text-destructive bg-destructive/10 animate-pulse" : "text-muted-foreground hover:text-accent hover:bg-accent/10"
+                          )}
+                          title={isListening ? "Stop listening" : "Speak your answer"}
+                        >
+                          <Mic size={18} fill={isListening ? "currentColor" : "none"} />
+                        </button>
+                      </div>
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}

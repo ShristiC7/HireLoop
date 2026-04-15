@@ -3,9 +3,11 @@ import { useAuth } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard, User, FileText, Briefcase, ClipboardList,
-  Brain, Mic, BarChart3, Users, Building, Megaphone, LogOut, Zap, ChevronRight, Crown, CreditCard
+  Brain, Mic, BarChart3, Users, Building, Megaphone, LogOut, Zap, ChevronRight, Crown, CreditCard, Sun, Moon
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 const studentNav = [
   { href: "/student/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -61,10 +63,16 @@ function NavItem({ href, icon: Icon, label }: { href: string; icon: React.Elemen
 export default function Sidebar() {
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const navItems = user?.role === "student" ? studentNav : user?.role === "recruiter" ? recruiterNav : adminNav;
   const roleLabel = user?.role === "student" ? "Student" : user?.role === "recruiter" ? "Recruiter" : "Admin";
   const roleColor = user?.role === "student" ? "text-accent" : user?.role === "recruiter" ? "text-primary" : "text-chart-3";
+
+  if (!mounted) return null;
 
   const handleLogout = () => {
     logout();
@@ -73,7 +81,7 @@ export default function Sidebar() {
 
   return (
     <div className="flex flex-col h-full w-64 bg-sidebar border-r border-sidebar-border">
-      <div className="p-5 border-b border-sidebar-border">
+      <div className="p-5 border-b border-sidebar-border flex items-center justify-between">
         <Link href="/">
           <div className="flex items-center gap-2.5 cursor-pointer">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
@@ -82,6 +90,13 @@ export default function Sidebar() {
             <span className="font-bold text-lg tracking-tight gradient-text font-serif">HireLoop</span>
           </div>
         </Link>
+        <button 
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="w-8 h-8 rounded-lg bg-secondary/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all hover:scale-105 active:scale-95"
+          title="Toggle Theme"
+        >
+          {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+        </button>
       </div>
 
       <div className="p-4 border-b border-sidebar-border">

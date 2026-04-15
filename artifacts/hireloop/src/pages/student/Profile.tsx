@@ -9,7 +9,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { User, Linkedin, Github, GraduationCap, Code, Save } from "lucide-react";
+import { User, Linkedin, Github, GraduationCap, Code, Save, RefreshCw, Check } from "lucide-react";
+import { api } from "@/lib/api";
+import { useState } from "react";
 
 const BRANCHES = ["CSE", "ECE", "EE", "ME", "CE", "IT", "Chemical", "Aerospace"];
 const COMMON_SKILLS = ["JavaScript", "Python", "React", "Node.js", "Java", "C++", "Machine Learning", "SQL", "Git", "Docker", "TypeScript", "AWS"];
@@ -33,6 +35,29 @@ export default function StudentProfile() {
   const updateProfile = useUpdateStudentProfile();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSyncGithub = async () => {
+    if (!form.getValues("githubUrl")) {
+      toast({ title: "Please enter a GitHub URL first", variant: "destructive" });
+      return;
+    }
+    
+    setIsSyncing(true);
+    try {
+      await api.post("/students/sync-github");
+      queryClient.invalidateQueries({ queryKey: getGetStudentProfileQueryKey() });
+      toast({ title: "GitHub Sync Successful", description: "Your skills and projects have been updated." });
+    } catch (err: any) {
+      toast({ 
+        title: "Sync Failed", 
+        description: err.response?.data?.error || "Make sure your GitHub URL is public.", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -207,7 +232,20 @@ export default function StudentProfile() {
                   )} />
                   <FormField control={form.control} name="githubUrl" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs flex items-center gap-1.5"><Github size={12} /> GitHub</FormLabel>
+                      <FormLabel className="text-xs flex items-center justify-between">
+                        <span className="flex items-center gap-1.5"><Github size={12} /> GitHub</span>
+                        {profile?.githubUrl && (
+                          <button 
+                            type="button" 
+                            onClick={handleSyncGithub}
+                            disabled={isSyncing}
+                            className="text-[10px] text-primary flex items-center gap-1 hover:underline disabled:opacity-50"
+                          >
+                            <RefreshCw size={10} className={isSyncing ? "animate-spin" : ""} />
+                            {isSyncing ? "Syncing..." : "Sync Repos"}
+                          </button>
+                        )}
+                      </FormLabel>
                       <FormControl><Input placeholder="https://github.com/..." data-testid="input-github" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
