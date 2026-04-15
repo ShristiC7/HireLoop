@@ -31,22 +31,32 @@ router.put("/students/profile", requireAuth, requireRole("student"), async (req:
     return;
   }
 
-  const [student] = await db.select().from(studentsTable).where(eq(studentsTable.userId, req.userId!));
-  if (!student) {
-    res.status(404).json({ error: "Student not found" });
-    return;
+  try {
+    const [student] = await db.select().from(studentsTable).where(eq(studentsTable.userId, req.userId!));
+    if (!student) {
+      res.status(404).json({ error: "Student not found" });
+      return;
+    }
+
+    const updateData = parsed.data;
+    const fieldsWithValues = Object.entries(updateData).filter(([, v]) => v !== undefined);
+    const completeness = Math.min(100, 20 + fieldsWithValues.length * 10);
+
+    const [updated] = await db.update(studentsTable)
+      .set({ ...updateData, profileCompleteness: completeness })
+      .where(eq(studentsTable.id, student.id))
+      .returning();
+
+    if (!updated) {
+      res.status(500).json({ error: "Profile update failed — no record returned" });
+      return;
+    }
+
+    res.json({ ...updated, totalApplications: 0, shortlisted: 0, offers: 0 });
+  } catch (err) {
+    console.error("[PUT /students/profile] DB error:", err);
+    res.status(500).json({ error: "Database error while updating profile" });
   }
-
-  const updateData = parsed.data;
-  const fieldsWithValues = Object.entries(updateData).filter(([, v]) => v !== undefined);
-  const completeness = Math.min(100, 20 + fieldsWithValues.length * 10);
-
-  const [updated] = await db.update(studentsTable)
-    .set({ ...updateData, profileCompleteness: completeness })
-    .where(eq(studentsTable.id, student.id))
-    .returning();
-
-  res.json({ ...updated, totalApplications: 0, shortlisted: 0, offers: 0 });
 });
 
 router.get("/students/resume", requireAuth, requireRole("student"), async (req: AuthRequest, res): Promise<void> => {
@@ -81,32 +91,37 @@ router.put("/students/resume", requireAuth, requireRole("student"), async (req: 
     return;
   }
 
-  const [student] = await db.select().from(studentsTable).where(eq(studentsTable.userId, req.userId!));
-  if (!student) {
-    res.status(404).json({ error: "Student not found" });
-    return;
+  try {
+    const [student] = await db.select().from(studentsTable).where(eq(studentsTable.userId, req.userId!));
+    if (!student) {
+      res.status(404).json({ error: "Student not found" });
+      return;
+    }
+
+    const data = parsed.data;
+    const skillCount = (data.experience?.length ?? 0) + (data.projects?.length ?? 0);
+    const atsScore = Math.min(100, 20 + skillCount * 15 + (data.summary ? 10 : 0) + (data.certifications?.length ?? 0) * 5);
+
+    const [existing] = await db.select().from(resumesTable).where(eq(resumesTable.studentId, student.id));
+    let updated;
+    if (existing) {
+      [updated] = await db.update(resumesTable)
+        .set({ ...data, atsScore, lastUpdated: new Date() })
+        .where(eq(resumesTable.studentId, student.id))
+        .returning();
+    } else {
+      [updated] = await db.insert(resumesTable)
+        .values({ studentId: student.id, ...data, atsScore, experience: data.experience ?? [], education: data.education ?? [], projects: data.projects ?? [], certifications: data.certifications ?? [], languages: data.languages ?? [], summary: data.summary ?? "" })
+        .returning();
+    }
+
+    await db.update(studentsTable).set({ resumeScore: atsScore }).where(eq(studentsTable.id, student.id));
+
+    res.json(updated);
+  } catch (err) {
+    console.error("[PUT /students/resume] DB error:", err);
+    res.status(500).json({ error: "Database error while saving resume" });
   }
-
-  const data = parsed.data;
-  const skillCount = (data.experience?.length ?? 0) + (data.projects?.length ?? 0);
-  const atsScore = Math.min(100, 20 + skillCount * 15 + (data.summary ? 10 : 0) + (data.certifications?.length ?? 0) * 5);
-
-  const [existing] = await db.select().from(resumesTable).where(eq(resumesTable.studentId, student.id));
-  let updated;
-  if (existing) {
-    [updated] = await db.update(resumesTable)
-      .set({ ...data, atsScore, lastUpdated: new Date() })
-      .where(eq(resumesTable.studentId, student.id))
-      .returning();
-  } else {
-    [updated] = await db.insert(resumesTable)
-      .values({ studentId: student.id, ...data, atsScore, experience: data.experience ?? [], education: data.education ?? [], projects: data.projects ?? [], certifications: data.certifications ?? [], languages: data.languages ?? [], summary: data.summary ?? "" })
-      .returning();
-  }
-
-  await db.update(studentsTable).set({ resumeScore: atsScore }).where(eq(studentsTable.id, student.id));
-
-  res.json(updated);
 });
 
 export default router;
