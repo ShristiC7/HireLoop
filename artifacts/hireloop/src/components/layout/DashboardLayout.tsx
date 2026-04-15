@@ -1,8 +1,9 @@
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 import Sidebar from "./Sidebar";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -12,6 +13,8 @@ interface Props {
 export default function DashboardLayout({ children, requiredRole }: Props) {
   const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
+  // FR-109: mobile sidebar state
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -22,6 +25,11 @@ export default function DashboardLayout({ children, requiredRole }: Props) {
       else setLocation("/admin/dashboard");
     }
   }, [user, isLoading, requiredRole, setLocation]);
+
+  // Close sidebar when navigating on mobile
+  useEffect(() => {
+    setMobileSidebarOpen(false);
+  }, [useLocation()[0]]);
 
   if (isLoading) {
     return (
@@ -38,7 +46,40 @@ export default function DashboardLayout({ children, requiredRole }: Props) {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      <Sidebar />
+      {/* Desktop sidebar — always visible on lg+ */}
+      <div className="hidden lg:flex">
+        <Sidebar />
+      </div>
+
+      {/* Mobile sidebar overlay — FR-109 */}
+      <AnimatePresence>
+        {mobileSidebarOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              key="sidebar-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+              onClick={() => setMobileSidebarOpen(false)}
+            />
+            {/* Sidebar drawer */}
+            <motion.div
+              key="sidebar-drawer"
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 260 }}
+              className="fixed inset-y-0 left-0 z-50 lg:hidden"
+            >
+              <Sidebar onClose={() => setMobileSidebarOpen(false)} />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       <motion.main
         key="dashboard-main"
         initial={{ opacity: 0, x: 10 }}
@@ -46,7 +87,20 @@ export default function DashboardLayout({ children, requiredRole }: Props) {
         transition={{ duration: 0.2 }}
         className="flex-1 overflow-y-auto"
       >
-        <div className="min-h-full p-6">
+        {/* Mobile top bar — FR-109 */}
+        <div className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-border bg-background sticky top-0 z-30">
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all"
+            aria-label="Open menu"
+            data-testid="button-mobile-menu"
+          >
+            <Menu size={20} />
+          </button>
+          <span className="font-bold text-base tracking-tight gradient-text font-serif">HireLoop</span>
+        </div>
+
+        <div className="min-h-full p-4 md:p-6">
           {children}
         </div>
       </motion.main>
