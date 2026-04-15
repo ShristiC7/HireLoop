@@ -18,6 +18,7 @@ import AIResume from "@/pages/student/AIResume";
 import AICoverLetter from "@/pages/student/AICoverLetter";
 import AIInterview from "@/pages/student/AIInterview";
 import StudentPremium from "@/pages/student/Premium";
+import StudentAnnouncements from "@/pages/student/Announcements";
 
 import RecruiterDashboard from "@/pages/recruiter/Dashboard";
 import RecruiterJobs from "@/pages/recruiter/Jobs";
@@ -50,6 +51,7 @@ function Router() {
       <Route path="/student/resume" component={StudentResume} />
       <Route path="/student/jobs" component={StudentJobs} />
       <Route path="/student/applications" component={StudentApplications} />
+      <Route path="/student/announcements" component={StudentAnnouncements} />
       <Route path="/student/ai-resume" component={AIResume} />
       <Route path="/student/ai-cover-letter" component={AICoverLetter} />
       <Route path="/student/ai-interview" component={AIInterview} />
