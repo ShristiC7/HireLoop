@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Zap, ArrowLeft, GraduationCap, Building2, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { GoogleLogin } from "@react-oauth/google";
 
 const schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -48,6 +49,29 @@ export default function Register() {
         toast({ title: "Registration failed", description: error?.response?.data?.error ?? "Please try again.", variant: "destructive" });
       },
     });
+  };
+
+  const onGoogleSuccess = async (response: any) => {
+    try {
+      const apiBase = import.meta.env.VITE_API_URL ?? `${import.meta.env.BASE_URL.replace(/\/$/, "")}/api`;
+      const res = await fetch(`${apiBase}/oauth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: response.credential, role: selectedRole })
+      });
+      if (!res.ok) throw new Error("Google registration failed");
+      const data = await res.json();
+      
+      const userPayload = JSON.parse(atob(data.token.split('.')[1]));
+      login(data.token, { id: userPayload.userId, email: "", role: data.role, name: "Google User" } as any);
+      
+      if (data.role === "student") setLocation("/student/dashboard");
+      else setLocation("/recruiter/dashboard");
+      
+      toast({ title: "Successfully registered with Google!" });
+    } catch (err) {
+      toast({ title: "Google Registration Failed", variant: "destructive" });
+    }
   };
 
   return (
@@ -169,6 +193,21 @@ export default function Register() {
               </motion.button>
             </form>
           </Form>
+
+          <div className="my-5 flex items-center">
+            <div className="flex-1 border-t border-border"></div>
+            <span className="px-3 text-xs text-muted-foreground uppercase">or continue with</span>
+            <div className="flex-1 border-t border-border"></div>
+          </div>
+          
+          <div className="flex justify-center mb-5">
+            <GoogleLogin
+              onSuccess={onGoogleSuccess}
+              onError={() => toast({ title: "Google registration failed", variant: "destructive" })}
+              theme="filled_black"
+              shape="pill"
+            />
+          </div>
 
           <p className="text-center text-sm text-muted-foreground mt-5">
             Already have an account?{" "}
