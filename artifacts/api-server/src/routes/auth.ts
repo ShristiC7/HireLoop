@@ -8,7 +8,10 @@ import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
-const JWT_SECRET = process.env.SESSION_SECRET || "hireloop-secret-key";
+if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET environment variable is required in production");
+}
+const JWT_SECRET = process.env.SESSION_SECRET || "hireloop-secret-key-dev-only";
 
 function signToken(userId: number, role: string): string {
   return jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: "7d" });
