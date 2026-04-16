@@ -4,6 +4,7 @@ import { eq, and } from "drizzle-orm";
 import { requireAuth, requireRole, type AuthRequest } from "../middlewares/auth";
 import { ApplyToJobBody, UpdateApplicationStatusBody, UpdateApplicationStatusParams, GetJobApplicationsParams } from "@workspace/api-zod";
 import { sendEmail, applicationStatusEmail } from "../services/email";
+import { wsManager } from "../lib/wsManager";
 
 const router: IRouter = Router();
 
@@ -102,6 +103,15 @@ router.put("/applications/:applicationId/status", requireAuth, async (req: AuthR
     if (student) {
       const [user] = await db.select().from(usersTable).where(eq(usersTable.id, student.userId));
       if (user && enriched.job) {
+        if (wsManager) {
+          wsManager.broadcastToUser(user.id, {
+            type: "APPLICATION_STATUS_UPDATE",
+            applicationId: enriched.id,
+            jobTitle: enriched.job.title,
+            company: enriched.job.company,
+            status: parsed.data.status,
+          });
+        }
         await sendEmail({
           to: user.email,
           subject: `Application Update: ${enriched.job.title} at ${enriched.job.company}`,
