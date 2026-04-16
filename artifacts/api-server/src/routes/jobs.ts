@@ -1,8 +1,9 @@
 import { Router, type IRouter } from "express";
-import { db, jobsTable, recruitersTable, applicationsTable } from "@workspace/db";
-import { eq, and, gte, ilike, count } from "drizzle-orm";
+import { db, jobsTable, recruitersTable, applicationsTable, usersTable } from "@workspace/db";
+import { eq, and, gte, ilike, count, ne } from "drizzle-orm";
 import { requireAuth, requireRole, type AuthRequest } from "../middlewares/auth";
 import { CreateJobBody, ListJobsQueryParams, GetJobParams, UpdateJobParams, DeleteJobParams } from "@workspace/api-zod";
+import { sendEmail } from "../services/email";
 
 const router: IRouter = Router();
 
@@ -57,12 +58,90 @@ router.post("/jobs", requireAuth, requireRole("recruiter"), async (req: AuthRequ
     ...parsed.data,
     recruiterId: recruiter.id,
     deadline: deadlineDate,
-    status: "active",
+    status: "pending",
     eligibleBranches: parsed.data.eligibleBranches ?? [],
     skills: parsed.data.skills ?? [],
   }).returning();
 
   res.status(201).json({ ...job, applicantCount: 0 });
+});
+
+router.get("/jobs/mine", requireAuth, requireRole("recruiter"), async (req: AuthRequest, res): Promise<void> => {
+  const [recruiter] = await db.select().from(recruitersTable).where(eq(recruitersTable.userId, req.userId!));
+  if (!recruiter) {
+    res.json([]);
+    return;
+  }
+
+  const jobs = await db.select().from(jobsTable).where(eq(jobsTable.recruiterId, recruiter.id));
+  const enriched = await Promise.all(jobs.map(enrichJobWithCount));
+  res.json(enriched);
+});
+
+router.get("/jobs/pending", requireAuth, requireRole("admin"), async (_req: AuthRequest, res): Promise<void> => {
+  const jobs = await db.select().from(jobsTable).where(eq(jobsTable.status, "pending"));
+  const enriched = await Promise.all(jobs.map(enrichJobWithCount));
+  res.json(enriched);
+});
+
+router.patch("/jobs/:jobId/approve", requireAuth, requireRole("admin"), async (req: AuthRequest, res): Promise<void> => {
+  const jobId = parseInt(req.params.jobId as string, 10);
+  const [job] = await db.update(jobsTable)
+    .set({ status: "active" })
+    .where(eq(jobsTable.id, jobId))
+    .returning();
+
+  if (!job) {
+    res.status(404).json({ error: "Job not found" });
+    return;
+  }
+
+  try {
+    const [recruiter] = await db.select().from(recruitersTable).where(eq(recruitersTable.id, job.recruiterId));
+    if (recruiter) {
+      const [user] = await db.select().from(usersTable).where(eq(usersTable.id, recruiter.userId));
+      if (user) {
+        await sendEmail({
+          to: user.email,
+          subject: `Job Approved: ${job.title}`,
+          html: `<p>Your job posting <strong>${job.title}</strong> at <strong>${job.company}</strong> has been approved and is now live on HireLoop.</p><p>Students will now be able to view and apply to your posting.</p>`,
+        });
+      }
+    }
+  } catch { /* email non-critical */ }
+
+  res.json(await enrichJobWithCount(job));
+});
+
+router.patch("/jobs/:jobId/reject", requireAuth, requireRole("admin"), async (req: AuthRequest, res): Promise<void> => {
+  const jobId = parseInt(req.params.jobId as string, 10);
+  const { reason } = req.body;
+
+  const [job] = await db.update(jobsTable)
+    .set({ status: "closed" })
+    .where(eq(jobsTable.id, jobId))
+    .returning();
+
+  if (!job) {
+    res.status(404).json({ error: "Job not found" });
+    return;
+  }
+
+  try {
+    const [recruiter] = await db.select().from(recruitersTable).where(eq(recruitersTable.id, job.recruiterId));
+    if (recruiter) {
+      const [user] = await db.select().from(usersTable).where(eq(usersTable.id, recruiter.userId));
+      if (user) {
+        await sendEmail({
+          to: user.email,
+          subject: `Job Posting Rejected: ${job.title}`,
+          html: `<p>Your job posting <strong>${job.title}</strong> at <strong>${job.company}</strong> has been rejected.</p>${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}<p>Please review the posting and resubmit after making necessary changes.</p>`,
+        });
+      }
+    }
+  } catch { /* email non-critical */ }
+
+  res.json(await enrichJobWithCount(job));
 });
 
 router.get("/jobs/:jobId", async (req, res): Promise<void> => {

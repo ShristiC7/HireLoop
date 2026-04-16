@@ -154,6 +154,14 @@ export default function Login() {
                 <span className="text-primary font-medium cursor-pointer hover:underline" data-testid="link-register">Create one</span>
               </Link>
             </p>
+
+            <div className="mt-3 text-center">
+              <Link href="/admin-login">
+                <span className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                  Placement Cell / Admin? <span className="text-primary">Admin Login →</span>
+                </span>
+              </Link>
+            </div>
           </div>
 
           {/* Demo accounts */}

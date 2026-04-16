@@ -1,8 +1,9 @@
 import { Router, type IRouter } from "express";
-import { db, applicationsTable, studentsTable, jobsTable, recruitersTable } from "@workspace/db";
+import { db, applicationsTable, studentsTable, jobsTable, recruitersTable, usersTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { requireAuth, requireRole, type AuthRequest } from "../middlewares/auth";
 import { ApplyToJobBody, UpdateApplicationStatusBody, UpdateApplicationStatusParams, GetJobApplicationsParams } from "@workspace/api-zod";
+import { sendEmail, applicationStatusEmail } from "../services/email";
 
 const router: IRouter = Router();
 
@@ -49,7 +50,20 @@ router.post("/applications", requireAuth, requireRole("student"), async (req: Au
     status: "applied",
   }).returning();
 
-  res.status(201).json(await enrichApplication(app));
+  const enriched = await enrichApplication(app);
+
+  try {
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, req.userId!));
+    if (user && enriched.job) {
+      await sendEmail({
+        to: user.email,
+        subject: `Application Received: ${enriched.job.title} at ${enriched.job.company}`,
+        html: applicationStatusEmail("applied", enriched.job.title, enriched.job.company),
+      });
+    }
+  } catch { /* email non-critical */ }
+
+  res.status(201).json(enriched);
 });
 
 router.put("/applications/:applicationId/status", requireAuth, async (req: AuthRequest, res): Promise<void> => {
@@ -81,7 +95,23 @@ router.put("/applications/:applicationId/status", requireAuth, async (req: AuthR
     .where(eq(applicationsTable.id, params.data.applicationId))
     .returning();
 
-  res.json(await enrichApplication(updated));
+  const enriched = await enrichApplication(updated);
+
+  try {
+    const [student] = await db.select().from(studentsTable).where(eq(studentsTable.id, updated.studentId));
+    if (student) {
+      const [user] = await db.select().from(usersTable).where(eq(usersTable.id, student.userId));
+      if (user && enriched.job) {
+        await sendEmail({
+          to: user.email,
+          subject: `Application Update: ${enriched.job.title} at ${enriched.job.company}`,
+          html: applicationStatusEmail(parsed.data.status, enriched.job.title, enriched.job.company),
+        });
+      }
+    }
+  } catch { /* email non-critical */ }
+
+  res.json(enriched);
 });
 
 router.get("/jobs/:jobId/applications", requireAuth, requireRole("recruiter"), async (req: AuthRequest, res): Promise<void> => {

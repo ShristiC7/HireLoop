@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
-import Sidebar from "./Sidebar";
+import Sidebar, { MobileBottomNav } from "./Sidebar";
 import { motion } from "framer-motion";
 
 interface Props {
@@ -46,10 +46,11 @@ export default function DashboardLayout({ children, requiredRole }: Props) {
         transition={{ duration: 0.2 }}
         className="flex-1 overflow-y-auto"
       >
-        <div className="min-h-full p-6">
+        <div className="min-h-full p-4 md:p-6 pb-20 md:pb-6">
           {children}
         </div>
       </motion.main>
+      <MobileBottomNav />
     </div>
   );
 }
