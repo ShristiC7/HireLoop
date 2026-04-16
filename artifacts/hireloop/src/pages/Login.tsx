@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Zap, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { GoogleLogin } from "@react-oauth/google";
 
 const schema = z.object({
   email: z.string().email("Invalid email"),
@@ -43,6 +44,30 @@ export default function Login() {
         toast({ title: "Invalid credentials", description: "Check your email and password.", variant: "destructive" });
       },
     });
+  };
+
+  const onGoogleSuccess = async (response: any) => {
+    try {
+      const apiBase = import.meta.env.VITE_API_URL ?? `${import.meta.env.BASE_URL.replace(/\/$/, "")}/api`;
+      const res = await fetch(`${apiBase}/oauth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: response.credential, role: "student" }) // default to student on login if they try to create via google here, but backend checks exist anyway
+      });
+      if (!res.ok) throw new Error("Google login failed");
+      const data = await res.json();
+      
+      const userPayload = JSON.parse(atob(data.token.split('.')[1]));
+      login(data.token, { id: userPayload.userId, email: "", role: data.role, name: "Google User" } as any);
+      
+      if (data.role === "student") setLocation("/student/dashboard");
+      else if (data.role === "recruiter") setLocation("/recruiter/dashboard");
+      else setLocation("/admin/dashboard");
+      
+      toast({ title: "Successfully logged in with Google!" });
+    } catch (err) {
+      toast({ title: "Google Login Failed", variant: "destructive" });
+    }
   };
 
   return (
@@ -147,6 +172,21 @@ export default function Login() {
                 </motion.button>
               </form>
             </Form>
+
+            <div className="my-5 flex items-center">
+              <div className="flex-1 border-t border-border"></div>
+              <span className="px-3 text-xs text-muted-foreground uppercase">or continue with</span>
+              <div className="flex-1 border-t border-border"></div>
+            </div>
+            
+            <div className="flex justify-center mb-5">
+              <GoogleLogin
+                onSuccess={onGoogleSuccess}
+                onError={() => toast({ title: "Google login failed", variant: "destructive" })}
+                theme="filled_black"
+                shape="pill"
+              />
+            </div>
 
             <p className="text-center text-sm text-muted-foreground mt-5">
               No account?{" "}

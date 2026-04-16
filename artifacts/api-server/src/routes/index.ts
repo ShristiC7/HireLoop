@@ -11,6 +11,7 @@ import dashboardRouter from "./dashboard";
 import adminRouter from "./admin";
 import adminReportsRouter from "./admin/reports";
 import paymentsRouter from "./payments";
+import oauthRouter from "./oauth";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use(dashboardRouter);
 router.use(adminRouter);
 router.use(adminReportsRouter);
 router.use(paymentsRouter);
+router.use(oauthRouter);
 
 export default router;
