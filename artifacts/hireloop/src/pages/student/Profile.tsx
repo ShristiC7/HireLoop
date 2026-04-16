@@ -23,8 +23,8 @@ const schema = z.object({
   batch: z.string().min(4),
   cgpa: z.coerce.number().min(0).max(10),
   bio: z.string().optional(),
-  linkedinUrl: z.string().url().optional().or(z.literal("")),
-  githubUrl: z.string().url().optional().or(z.literal("")),
+  linkedinUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
+  githubUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
   skills: z.array(z.string()),
 });
 
@@ -82,15 +82,55 @@ export default function StudentProfile() {
 
   const toggleSkill = (skill: string) => {
     const current = form.getValues("skills");
-    if (current.includes(skill)) {
-      form.setValue("skills", current.filter(s => s !== skill));
+    const cleaned = skill.trim();
+    if (!cleaned) return;
+    
+    if (current.includes(cleaned)) {
+      form.setValue("skills", current.filter(s => s !== cleaned), { shouldDirty: true });
+    } else if (current.length < 30) {
+      form.setValue("skills", [...current, cleaned], { shouldDirty: true });
+    }
+  };
+
+  const [skillInput, setSkillInput] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  const handleSkillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSkillInput(val);
+    if (val.trim()) {
+      const matches = COMMON_SKILLS.filter(s => 
+        s.toLowerCase().includes(val.toLowerCase()) && 
+        !currentSkills.includes(s)
+      ).slice(0, 5);
+      setSuggestions(matches);
     } else {
-      form.setValue("skills", [...current, skill]);
+      setSuggestions([]);
+    }
+  };
+
+  const handleSkillKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      toggleSkill(skillInput);
+      setSkillInput("");
+      setSuggestions([]);
+    } else if (e.key === "Backspace" && !skillInput && currentSkills.length > 0) {
+      toggleSkill(currentSkills[currentSkills.length - 1]);
     }
   };
 
   const onSubmit = (data: FormData) => {
-    updateProfile.mutate({ data }, {
+    // Clean empty strings to null for the backend
+    const cleanedData = {
+      ...data,
+      linkedinUrl: data.linkedinUrl || undefined,
+      githubUrl: data.githubUrl || undefined,
+      phone: data.phone || undefined,
+      bio: data.bio || undefined,
+    };
+
+    updateProfile.mutate({ data: cleanedData }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetStudentProfileQueryKey() });
         toast({ title: "Profile updated successfully" });
@@ -194,25 +234,82 @@ export default function StudentProfile() {
                   <Code size={16} className="text-primary" />
                   <h2 className="font-semibold text-sm">Skills</h2>
                 </div>
-                <p className="text-xs text-muted-foreground mb-3">Select your technical skills</p>
-                <div className="flex flex-wrap gap-2">
-                  {COMMON_SKILLS.map(skill => (
-                    <motion.button
-                      key={skill}
-                      type="button"
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => toggleSkill(skill)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                        currentSkills.includes(skill)
-                          ? "bg-primary/15 text-primary border-primary/30"
-                          : "border-border text-muted-foreground hover:border-primary/30"
-                      }`}
-                      data-testid={`skill-${skill.toLowerCase().replace(/\s+/g, "-")}`}
-                    >
-                      {skill}
-                    </motion.button>
-                  ))}
+                <p className="text-xs text-muted-foreground mb-3">Add your technical skills (Max 30)</p>
+                
+                <div className="space-y-4">
+                  <div className="relative">
+                    <Input
+                      placeholder="Type a skill and press Enter..."
+                      value={skillInput}
+                      onChange={handleSkillInputChange}
+                      onKeyDown={handleSkillKeyDown}
+                      className="bg-background/50 border-dashed"
+                      data-testid="input-skill-search"
+                    />
+                    {suggestions.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-xl shadow-xl p-1 overflow-hidden">
+                        {suggestions.map(s => (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => {
+                              toggleSkill(s);
+                              setSkillInput("");
+                              setSuggestions([]);
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 rounded-lg transition-colors flex items-center justify-between group"
+                          >
+                            {s}
+                            <Check size={14} className="opacity-0 group-hover:opacity-100 text-primary" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 min-h-[40px] p-3 rounded-xl bg-muted/20 border border-dashed border-border/60">
+                    {currentSkills.length === 0 && (
+                      <span className="text-xs text-muted-foreground italic">No skills added yet</span>
+                    )}
+                    {currentSkills.map(skill => (
+                      <motion.div
+                        key={skill}
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="px-3 py-1.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20 flex items-center gap-2 group hover:bg-primary/20 transition-all"
+                      >
+                        {skill}
+                        <button
+                          type="button"
+                          onClick={() => toggleSkill(skill)}
+                          className="hover:text-destructive transition-colors"
+                        >
+                          <RefreshCw size={10} className="rotate-45" />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <div className="pt-2">
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-2">Popular Skills</p>
+                    <div className="flex flex-wrap gap-2">
+                      {COMMON_SKILLS.slice(0, 10).map(skill => (
+                        <button
+                          key={skill}
+                          type="button"
+                          onClick={() => toggleSkill(skill)}
+                          disabled={currentSkills.includes(skill)}
+                          className={`px-3 py-1.5 rounded-full text-[10px] font-medium border transition-all ${
+                            currentSkills.includes(skill)
+                              ? "bg-muted text-muted-foreground cursor-not-allowed border-transparent"
+                              : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary"
+                          }`}
+                        >
+                          {skill}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
 
