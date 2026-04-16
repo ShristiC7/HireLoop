@@ -1,15 +1,24 @@
 import { Router, type IRouter } from "express";
 import { db, jobsTable, recruitersTable, applicationsTable, usersTable } from "@workspace/db";
-import { eq, and, gte, ilike, count, ne } from "drizzle-orm";
+import { eq, and, gte, ilike, count, ne, inArray, sql } from "drizzle-orm";
 import { requireAuth, requireRole, type AuthRequest } from "../middlewares/auth";
 import { CreateJobBody, ListJobsQueryParams, GetJobParams, UpdateJobParams, DeleteJobParams } from "@workspace/api-zod";
 import { sendEmail } from "../services/email";
+import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
-async function enrichJobWithCount(job: typeof jobsTable.$inferSelect) {
-  const [result] = await db.select({ count: count() }).from(applicationsTable).where(eq(applicationsTable.jobId, job.id));
-  return { ...job, applicantCount: Number(result?.count ?? 0) };
+async function enrichJobsWithCounts(jobsList: typeof jobsTable.$inferSelect[]) {
+  if (jobsList.length === 0) return [];
+  const jobIds = jobsList.map(j => j.id);
+  const counts = await db
+    .select({ jobId: applicationsTable.jobId, count: count() })
+    .from(applicationsTable)
+    .where(inArray(applicationsTable.jobId, jobIds))
+    .groupBy(applicationsTable.jobId);
+    
+  const countMap = new Map(counts.map(c => [c.jobId, Number(c.count)]));
+  return jobsList.map(job => ({ ...job, applicantCount: countMap.get(job.id) ?? 0 }));
 }
 
 router.get("/jobs", async (req, res): Promise<void> => {
@@ -36,7 +45,7 @@ router.get("/jobs", async (req, res): Promise<void> => {
   }
 
   const jobs = await query;
-  const enriched = await Promise.all(jobs.map(enrichJobWithCount));
+  const enriched = await enrichJobsWithCounts(jobs);
   res.json(enriched);
 });
 
@@ -74,13 +83,13 @@ router.get("/jobs/mine", requireAuth, requireRole("recruiter"), async (req: Auth
   }
 
   const jobs = await db.select().from(jobsTable).where(eq(jobsTable.recruiterId, recruiter.id));
-  const enriched = await Promise.all(jobs.map(enrichJobWithCount));
+  const enriched = await enrichJobsWithCounts(jobs);
   res.json(enriched);
 });
 
 router.get("/jobs/pending", requireAuth, requireRole("admin"), async (_req: AuthRequest, res): Promise<void> => {
   const jobs = await db.select().from(jobsTable).where(eq(jobsTable.status, "pending"));
-  const enriched = await Promise.all(jobs.map(enrichJobWithCount));
+  const enriched = await enrichJobsWithCounts(jobs);
   res.json(enriched);
 });
 
@@ -158,7 +167,8 @@ router.get("/jobs/:jobId", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(await enrichJobWithCount(job));
+  const [enriched] = await enrichJobsWithCounts([job]);
+  res.json(enriched);
 });
 
 router.put("/jobs/:jobId", requireAuth, requireRole("recruiter"), async (req: AuthRequest, res): Promise<void> => {
@@ -193,7 +203,8 @@ router.put("/jobs/:jobId", requireAuth, requireRole("recruiter"), async (req: Au
     .where(eq(jobsTable.id, params.data.jobId))
     .returning();
 
-  res.json(await enrichJobWithCount(updated));
+  const [enriched] = await enrichJobsWithCounts([updated]);
+  res.json(enriched);
 });
 
 router.delete("/jobs/:jobId", requireAuth, requireRole("recruiter"), async (req: AuthRequest, res): Promise<void> => {

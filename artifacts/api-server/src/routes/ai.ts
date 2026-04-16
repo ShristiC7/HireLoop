@@ -9,6 +9,11 @@ import crypto from "crypto";
 
 const router: IRouter = Router();
 
+function sanitizeInput(str: string): string {
+  if (!str) return "";
+  return str.replace(/<[^>]*>?/gm, "").slice(0, 5000); // strip HTML and limit length
+}
+
 const openai = new OpenAI({
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY || "dummy",
@@ -152,7 +157,7 @@ Return a JSON object with these exact fields:
   }
 }
 Be honest and specific. Return ONLY the JSON, no other text.`,
-    `Resume:\n${resumeText}\n\nJob Description:\n${jobDesc}`,
+    `Resume:\n${sanitizeInput(resumeText)}\n\nJob Description:\n${sanitizeInput(jobDesc)}`,
     fallback
   ) as typeof fallback;
 
@@ -201,7 +206,7 @@ Return a JSON object with:
 }
 The cover letter should be 3-4 paragraphs, professional but warm, and specifically reference the job and company.
 Return ONLY the JSON.`,
-    `Student Profile:\n${resumeContext}\n\nJob:\n${jobContext}${customNote ? `\n\nAdditional context: ${customNote}` : ""}`,
+    `Student Profile:\n${sanitizeInput(resumeContext)}\n\nJob:\n${sanitizeInput(jobContext)}${customNote ? `\n\nAdditional context: ${sanitizeInput(customNote)}` : ""}`,
     {
       coverLetter: `Dear Hiring Manager,\n\nI am writing to express my strong interest in this position. As a ${student.branch} student with a CGPA of ${student.cgpa} and expertise in ${student.skills.slice(0, 3).join(", ")}, I am confident that my skills align well with your requirements.\n\nThroughout my academic journey, I have developed strong technical foundations and practical experience through projects and internships. My passion for technology and continuous learning makes me an ideal candidate for this role.\n\nI am excited about the opportunity to contribute to your team and grow as a professional. I would welcome the chance to discuss how my background and skills can benefit your organization.\n\nThank you for considering my application. I look forward to hearing from you.\n\nSincerely,\n${student.name}`,
       subject: `Application for Position - ${student.name}`,
@@ -332,7 +337,7 @@ Return JSON with:
   "estimatedHours": <total hours 20-60>
 }
 Use only free resources (YouTube, freeCodeCamp, official docs, etc). Return ONLY JSON.`,
-    `Student background: ${student.branch} student, CGPA ${student.cgpa}, existing skills: ${student.skills.join(", ")}\n\nSkill to learn: ${skill}`,
+    `Student background: ${sanitizeInput(student.branch)} student, CGPA ${student.cgpa}, existing skills: ${sanitizeInput(student.skills.join(", "))}\n\nSkill to learn: ${sanitizeInput(skill)}`,
     {
       skill,
       overview: `${skill} is an essential skill for modern software development. This roadmap will take you from basics to practical implementation over 4 weeks.`,
@@ -399,10 +404,14 @@ router.post("/ai/smart-shortlist/:jobId", requireAuth, requireRole("recruiter"),
     return;
   }
 
-  const enriched = await Promise.all(apps.map(async (app) => {
-    const [student] = await db.select().from(studentsTable).where(eq(studentsTable.id, app.studentId));
+  const studentIds = Array.from(new Set(apps.map(a => a.studentId)));
+  const students = await db.select().from(st).where(inArray(st.id, studentIds));
+  const studentMap = new Map(students.map(s => [s.id, s]));
+
+  const enriched = apps.map((app) => {
+    const student = studentMap.get(app.studentId);
     return { ...app, student };
-  }));
+  });
 
   const jobSkillsLower = job.skills.map((s: string) => s.toLowerCase());
 
@@ -507,7 +516,7 @@ router.post("/ai/mock-interview/:sessionId/answer", requireAuth, requireRole("st
   "improvementTip": "one actionable improvement tip"
 }
 Return ONLY JSON.`,
-    `Question: ${currentQ}\nAnswer: ${answer}`,
+    `Question: ${sanitizeInput(currentQ)}\nAnswer: ${sanitizeInput(answer)}`,
     {
       feedback: "Your answer shows understanding of the topic. Consider adding more specific examples.",
       score: 65,

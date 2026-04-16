@@ -5,6 +5,7 @@ import { requireAuth, requireRole, type AuthRequest } from "../middlewares/auth"
 import { ApplyToJobBody, UpdateApplicationStatusBody, UpdateApplicationStatusParams, GetJobApplicationsParams } from "@workspace/api-zod";
 import { sendEmail, applicationStatusEmail } from "../services/email";
 import { wsManager } from "../lib/wsManager";
+import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
@@ -62,7 +63,9 @@ router.post("/applications", requireAuth, requireRole("student"), async (req: Au
         html: applicationStatusEmail("applied", enriched.job.title, enriched.job.company),
       });
     }
-  } catch { /* email non-critical */ }
+  } catch (error) { 
+    logger.warn({ error }, "Failed to send application received email");
+  }
 
   res.status(201).json(enriched);
 });
@@ -119,7 +122,9 @@ router.put("/applications/:applicationId/status", requireAuth, async (req: AuthR
         });
       }
     }
-  } catch { /* email non-critical */ }
+  } catch (error) {
+    logger.warn({ error, applicationId: updated.id }, "Failed to send application status update email");
+  }
 
   res.json(enriched);
 });
