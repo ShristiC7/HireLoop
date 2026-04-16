@@ -11,6 +11,7 @@ import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import AdminLogin from "@/pages/AdminLogin";
+import PaymentSuccess from "@/pages/PaymentSuccess";
 
 import StudentDashboard from "@/pages/student/Dashboard";
 import StudentProfile from "@/pages/student/Profile";
@@ -50,6 +51,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/admin-login" component={AdminLogin} />
+      <Route path="/payment-success" component={PaymentSuccess} />
 
       {/* Student */}
       <Route path="/student/dashboard" component={StudentDashboard} />
