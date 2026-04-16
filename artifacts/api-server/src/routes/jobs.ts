@@ -117,7 +117,9 @@ router.patch("/jobs/:jobId/approve", requireAuth, requireRole("admin"), async (r
         });
       }
     }
-  } catch { /* email non-critical */ }
+  } catch (error) {
+    logger.warn({ error, jobId }, "Failed to send job approval email");
+  }
 
   res.json(await enrichJobWithCount(job));
 });
@@ -148,7 +150,9 @@ router.patch("/jobs/:jobId/reject", requireAuth, requireRole("admin"), async (re
         });
       }
     }
-  } catch { /* email non-critical */ }
+  } catch (error) {
+    logger.warn({ error, jobId }, "Failed to send job rejection email");
+  }
 
   res.json(await enrichJobWithCount(job));
 });
