@@ -102,7 +102,7 @@ export default function Applications() {
                   </div>
 
                   {/* Timeline pipeline */}
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 group/timeline">
                     {PIPELINE.map((s, j) => (
                       <div key={s.key} className="flex items-center gap-1 flex-1">
                         <div className={cn(
@@ -110,20 +110,20 @@ export default function Applications() {
                           j <= stageIndex ? stage?.color : "bg-muted"
                         )} />
                         <div className={cn(
-                          "w-4 h-4 rounded-full flex items-center justify-center text-xs shrink-0 border-2",
+                          "w-4 h-4 rounded-full flex items-center justify-center text-[8px] shrink-0 border-2",
                           j <= stageIndex ? `${stage?.color} border-transparent text-white` : "border-border bg-transparent"
                         )}>
                           {j <= stageIndex && <span>✓</span>}
                         </div>
                         {j < PIPELINE.length - 1 && (
-                          <ArrowRight size={10} className={cn(j < stageIndex ? "text-foreground" : "text-muted-foreground")} />
+                          <ArrowRight size={10} className={cn("hidden sm:block", j < stageIndex ? "text-foreground" : "text-muted-foreground")} />
                         )}
                       </div>
                     ))}
                   </div>
                   <div className="flex justify-between mt-1.5">
                     {PIPELINE.map(s => (
-                      <span key={s.key} className="text-xs text-muted-foreground">{s.label}</span>
+                      <span key={s.key} className="text-[10px] sm:text-xs text-muted-foreground hidden xs:block">{s.label}</span>
                     ))}
                   </div>
 

@@ -20,12 +20,18 @@ function signToken(userId: number, role: string): string {
 
 // Route to start the Google OAuth flow
 router.get("/auth/google", (req, res) => {
+  const role = req.query.role as string || "student";
+  
+  // PRD Fix: Google sign-in does NOT create Admin accounts
+  const finalRole = role === "admin" ? "student" : role;
+
   const url = client.generateAuthUrl({
     access_type: "offline",
     scope: [
       "https://www.googleapis.com/auth/userinfo.profile",
       "https://www.googleapis.com/auth/userinfo.email",
     ],
+    state: Buffer.from(JSON.stringify({ role: finalRole })).toString("base64"),
   });
   res.redirect(url);
 });
@@ -57,15 +63,27 @@ router.get("/auth/google/callback", async (req, res): Promise<void> => {
     const name = payload.name || "Google User";
     const googleId = payload.sub;
 
+    // Extract role from state
+    let roleFromState = "student";
+    const state = req.query.state as string;
+    if (state) {
+      try {
+        const decoded = JSON.parse(Buffer.from(state, "base64").toString());
+        roleFromState = decoded.role || "student";
+      } catch (e) {
+        logger.warn({ state }, "Failed to parse OAuth state");
+      }
+    }
+
     // 1. Check if user exists
     let [user] = await db.select().from(usersTable).where(eq(usersTable.email, email));
 
     if (!user) {
-      // 2. Create new user if not found (Default to student role)
+      // 2. Create new user if not found (Use role from state)
       [user] = await db.insert(usersTable).values({
         email,
         name,
-        role: "student",
+        role: roleFromState as any,
         googleId,
         // passwordHash is nullable now
       }).returning();

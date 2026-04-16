@@ -199,40 +199,42 @@ export default function StudentJobs() {
         </motion.div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col md:flex-row gap-3">
           <div className="relative flex-1">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search roles, companies..."
-              className="pl-9"
+              className="pl-9 bg-background/50"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               data-testid="input-search-jobs"
             />
           </div>
-          <div className="flex gap-2 flex-wrap">
-            {BRANCHES.map(b => (
-              <button
-                key={b}
-                onClick={() => setBranch(b)}
-                className={cn("px-3 py-1.5 rounded-lg text-xs font-medium border transition-all", branch === b ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/30")}
-                data-testid={`filter-branch-${b.toLowerCase()}`}
-              >
-                {b}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            {JOB_TYPES.map(t => (
-              <button
-                key={t}
-                onClick={() => setJobType(t)}
-                className={cn("px-3 py-1.5 rounded-lg text-xs font-medium border transition-all capitalize", jobType === t ? "border-accent bg-accent/10 text-accent" : "border-border text-muted-foreground hover:border-accent/30")}
-                data-testid={`filter-type-${t}`}
-              >
-                {t}
-              </button>
-            ))}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex gap-1.5 flex-wrap">
+              {BRANCHES.map(b => (
+                <button
+                  key={b}
+                  onClick={() => setBranch(b)}
+                  className={cn("px-2.5 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium border transition-all", branch === b ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/30")}
+                  data-testid={`filter-branch-${b.toLowerCase()}`}
+                >
+                  {b}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-1.5">
+              {JOB_TYPES.map(t => (
+                <button
+                  key={t}
+                  onClick={() => setJobType(t)}
+                  className={cn("px-2.5 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium border transition-all capitalize whitespace-nowrap", jobType === t ? "border-accent bg-accent/10 text-accent" : "border-border text-muted-foreground hover:border-accent/30")}
+                  data-testid={`filter-type-${t}`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
