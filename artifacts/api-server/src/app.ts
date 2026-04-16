@@ -3,6 +3,8 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import helmet from "helmet";
+import { generalRateLimiter } from "./middlewares/rateLimiter";
 
 const app: Express = express();
 
@@ -25,7 +27,12 @@ app.use(
     },
   }),
 );
-app.use(cors());
+app.use(helmet());
+app.use(cors({
+  origin: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : "*",
+  credentials: true,
+}));
+app.use(generalRateLimiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

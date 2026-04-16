@@ -3,6 +3,7 @@ import { db, studentsTable, resumesTable, interviewSessionsTable, jobsTable } fr
 import { eq, inArray } from "drizzle-orm";
 import { requireAuth, requireRole, type AuthRequest } from "../middlewares/auth";
 import { AnalyzeResumeBody, StartMockInterviewBody, SubmitInterviewAnswerBody, SubmitInterviewAnswerParams, GetInterviewSummaryParams } from "@workspace/api-zod";
+import { aiRateLimiter } from "../middlewares/rateLimiter";
 import OpenAI from "openai";
 import crypto from "crypto";
 
@@ -77,7 +78,7 @@ async function callAI(systemPrompt: string, userContent: string, fallback: unkno
   }
 }
 
-router.post("/ai/analyze-resume", requireAuth, requireRole("student"), async (req: AuthRequest, res): Promise<void> => {
+router.post("/ai/analyze-resume", requireAuth, requireRole("student"), aiRateLimiter, async (req: AuthRequest, res): Promise<void> => {
   const parsed = AnalyzeResumeBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -163,7 +164,7 @@ Be honest and specific. Return ONLY the JSON, no other text.`,
   res.json(result);
 });
 
-router.post("/ai/cover-letter", requireAuth, requireRole("student"), async (req: AuthRequest, res): Promise<void> => {
+router.post("/ai/cover-letter", requireAuth, requireRole("student"), aiRateLimiter, async (req: AuthRequest, res): Promise<void> => {
   const { jobId, customNote } = req.body;
 
   const [student] = await db.select().from(studentsTable).where(eq(studentsTable.userId, req.userId!));
@@ -210,7 +211,7 @@ Return ONLY the JSON.`,
   res.json(result);
 });
 
-router.post("/ai/recommendations", requireAuth, requireRole("student"), async (req: AuthRequest, res): Promise<void> => {
+router.post("/ai/recommendations", requireAuth, requireRole("student"), aiRateLimiter, async (req: AuthRequest, res): Promise<void> => {
   const [student] = await db.select().from(studentsTable).where(eq(studentsTable.userId, req.userId!));
   if (!student) {
     res.status(404).json({ error: "Student not found" });
@@ -246,7 +247,7 @@ router.post("/ai/recommendations", requireAuth, requireRole("student"), async (r
   res.json({ recommendations: sorted });
 });
 
-router.post("/ai/skill-radar", requireAuth, requireRole("student"), async (req: AuthRequest, res): Promise<void> => {
+router.post("/ai/skill-radar", requireAuth, requireRole("student"), aiRateLimiter, async (req: AuthRequest, res): Promise<void> => {
   const { jobIds } = req.body;
 
   if (!Array.isArray(jobIds) || jobIds.length === 0) {
@@ -296,7 +297,7 @@ router.post("/ai/skill-radar", requireAuth, requireRole("student"), async (req: 
   });
 });
 
-router.post("/ai/learning-roadmap", requireAuth, requireRole("student"), async (req: AuthRequest, res): Promise<void> => {
+router.post("/ai/learning-roadmap", requireAuth, requireRole("student"), aiRateLimiter, async (req: AuthRequest, res): Promise<void> => {
   const { skill } = req.body;
 
   if (!skill) {
@@ -380,7 +381,7 @@ Use only free resources (YouTube, freeCodeCamp, official docs, etc). Return ONLY
   res.json(result);
 });
 
-router.post("/ai/smart-shortlist/:jobId", requireAuth, requireRole("recruiter"), async (req: AuthRequest, res): Promise<void> => {
+router.post("/ai/smart-shortlist/:jobId", requireAuth, requireRole("recruiter"), aiRateLimiter, async (req: AuthRequest, res): Promise<void> => {
   const jobId = parseInt(req.params.jobId as string, 10);
   const { targetCount = 5 } = req.body;
 
@@ -423,7 +424,7 @@ router.post("/ai/smart-shortlist/:jobId", requireAuth, requireRole("recruiter"),
   res.json({ shortlist: sorted, totalApplicants: apps.length });
 });
 
-router.post("/ai/mock-interview/start", requireAuth, requireRole("student"), async (req: AuthRequest, res): Promise<void> => {
+router.post("/ai/mock-interview/start", requireAuth, requireRole("student"), aiRateLimiter, async (req: AuthRequest, res): Promise<void> => {
   const parsed = StartMockInterviewBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -469,7 +470,7 @@ router.post("/ai/mock-interview/start", requireAuth, requireRole("student"), asy
   });
 });
 
-router.post("/ai/mock-interview/:sessionId/answer", requireAuth, requireRole("student"), async (req: AuthRequest, res): Promise<void> => {
+router.post("/ai/mock-interview/:sessionId/answer", requireAuth, requireRole("student"), aiRateLimiter, async (req: AuthRequest, res): Promise<void> => {
   const raw = Array.isArray(req.params.sessionId) ? req.params.sessionId[0] : req.params.sessionId;
   const params = SubmitInterviewAnswerParams.safeParse({ sessionId: raw });
   if (!params.success) {
