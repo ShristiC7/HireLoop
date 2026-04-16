@@ -3,7 +3,7 @@ import { useGetAdminDashboard, useGetPlacementStats } from "@workspace/api-clien
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Users, Building, Briefcase, TrendingUp, BarChart3, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
 
 function StatCard({ label, value, icon: Icon, color, sub }: { label: string; value: number | string; icon: React.ElementType; color: string; sub?: string }) {
   return (
@@ -108,26 +108,45 @@ export default function AdminDashboard() {
                     <BarChart3 size={16} className="text-accent" />
                     <h3 className="font-semibold text-sm">Branch-wise Placement</h3>
                   </div>
-                  <div className="space-y-3">
-                    {(stats.branchWise ?? []).map((branch: { branch: string; placed: number; total: number; rate: number; avgPackage: number }) => (
-                      <div key={branch.branch} data-testid={`branch-row-${branch.branch.toLowerCase()}`}>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-medium">{branch.branch}</span>
-                          <div className="flex items-center gap-3">
-                            <span className="text-xs text-muted-foreground">{branch.placed}/{branch.total}</span>
-                            <span className="text-xs font-bold text-primary">{branch.rate}%</span>
+                  <div className="flex flex-col md:flex-row gap-6 mt-4">
+                    <div className="flex-1 space-y-3">
+                      {(stats.branchWise ?? []).map((branch: { branch: string; placed: number; total: number; rate: number; avgPackage: number }, i: number) => (
+                        <div key={branch.branch} data-testid={`branch-row-${branch.branch.toLowerCase()}`}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[10px] font-medium uppercase text-muted-foreground">{branch.branch}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold" style={{ color: COLORS[i % COLORS.length] }}>{branch.rate}%</span>
+                            </div>
+                          </div>
+                          <div className="h-1 rounded-full bg-muted overflow-hidden">
+                            <motion.div
+                              className="h-full rounded-full"
+                              style={{ background: COLORS[i % COLORS.length] }}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${branch.rate}%` }}
+                              transition={{ duration: 0.8, ease: "easeOut" }}
+                            />
                           </div>
                         </div>
-                        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                          <motion.div
-                            className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
-                            initial={{ width: 0 }}
-                            animate={{ width: `${branch.rate}%` }}
-                            transition={{ duration: 0.8, ease: "easeOut" }}
-                          />
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                    <div className="w-full md:w-32 h-32 flex shrink-0">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={stats.branchWise ?? []}
+                            innerRadius={30}
+                            outerRadius={50}
+                            paddingAngle={5}
+                            dataKey="placed"
+                          >
+                            {(stats.branchWise ?? []).map((_: unknown, index: number) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
                 </div>
 

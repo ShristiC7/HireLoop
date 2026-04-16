@@ -15,11 +15,9 @@ export default function OAuthCallback() {
     const token = params.get("token");
 
     if (token) {
-      // Decode JWT to get user roles and redirect accordingly
       try {
         const payload = JSON.parse(atob(token.split(".")[1]));
         
-        // Save token and user info
         login(token, {
           id: payload.userId,
           role: payload.role,
@@ -27,7 +25,6 @@ export default function OAuthCallback() {
 
         toast({ title: "Successfully authenticated with Google" });
 
-        // Redirect based on role
         if (payload.role === "student") setLocation("/student/dashboard");
         else if (payload.role === "recruiter") setLocation("/recruiter/dashboard");
         else if (payload.role === "admin") setLocation("/admin/dashboard");

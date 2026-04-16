@@ -1,0 +1,557 @@
+HireLoop — Project Requirements Document (PRD)
+Project Name: HireLoop
+Product Type: AI-Powered Campus Recruitment Web Platform
+Version: 1.0
+Prepared By: Universe of Innovation
+Project Category: EdTech + HRTech SaaS Platform
+
+Executive Summary
+HireLoop is an end-to-end campus recruitment management platform designed to streamline interactions between students, recruiters, and college placement cells.
+
+The system replaces fragmented placement workflows (emails, spreadsheets, manual tracking) with a centralized, AI-driven digital ecosystem enabling:
+
+Efficient hiring workflows
+Data-driven recruitment decisions
+AI-assisted student preparation
+Automated placement analytics
+
+Problem Statement
+Current campus recruitment systems suffer from:
+
+Student Challenges
+No structured resume guidance
+Low ATS compatibility awareness
+Limited interview preparation resources
+Poor visibility into application status
+Recruiter Challenges
+Manual candidate filtering
+Inconsistent applicant quality
+Time-consuming coordination
+Placement Cell Challenges
+Spreadsheet-heavy operations
+Lack of analytics dashboards
+Manual reporting workload
+
+Product Vision
+Build a unified intelligent platform that becomes the operating system for campus hiring.
+
+HireLoop aims to:
+
+Improve placement success rates
+Reduce recruiter hiring time
+Enable data-driven placement management
+Provide AI career assistance to students
+
+Goals & Objectives
+Primary Goals
+Digitize campus recruitment lifecycle
+Integrate AI career assistance
+Enable scalable placement operations
+Success Metrics (KPIs)
+Metric Target
+Application processing time ↓ 40%
+Recruiter filtering time ↓ 50%
+Student resume quality score ↑ 30%
+Placement reporting automation 100%
+Stakeholders
+Role Responsibility
+Students Apply & prepare for jobs
+Recruiters Hire candidates
+Placement Cell Manage ecosystem
+Product Team Feature planning
+Engineering Team Implementation
+User Roles & Permissions
+6.1 Student
+Create profile
+Upload/build resume
+Apply for jobs
+Access AI tools
+Track applications
+6.2 Recruiter
+Post jobs
+Filter applicants
+Shortlist candidates
+Schedule interviews
+6.3 Placement Admin
+Approve companies
+Monitor placements
+Generate reports
+Publish announcements
+Functional Requirements
+7.1 Authentication & Authorization
+Features
+Role-based signup/login
+JWT authentication
+Secure password encryption
+Role access control
+Requirements
+Email verification
+Session management
+Password reset flow
+7.2 Student Module
+Profile Management
+Personal details
+Academic data
+Skills & projects
+Resume uploads
+Resume Builder
+Template selection
+Section editing
+Live preview
+PDF export
+Job Applications
+One-click apply
+Status tracking pipeline:
+Applied → Shortlisted → Interview → Offer → Rejected
+7.3 AI Resume Analyzer
+Inputs
+Resume file
+Job description (optional)
+Outputs
+ATS score
+Keyword gaps
+Suggestions
+Match percentage
+Processing Flow
+Parse resume text
+Extract skills/entities
+Compare with job description
+Generate feedback
+7.4 AI Mock Interview
+Features
+Role-specific questions
+Text response evaluation
+AI feedback scoring
+Session summary
+Outputs
+Communication score
+Technical depth score
+Improvement suggestions
+7.5 Recruiter Module
+Job Posting
+Fields:
+
+Role title
+Eligibility (CGPA, branch, batch)
+Salary range
+Deadline
+Applicant Management
+Filter by skills
+Sort candidates
+Shortlist system
+Interview Scheduling
+Time slot creation
+Candidate assignment
+Email notifications
+7.6 Placement Cell Module
+Dashboard Metrics
+Total placed students
+Active companies
+Average package
+Placement trends
+Reports
+Branch-wise placement
+Company-wise hiring
+Batch analytics
+Downloadable reports (PDF/CSV)
+7.7 Announcement Board
+Admin posts notices
+Visible to all students
+Timestamped updates
+7.8 Payment System
+Recruiters
+Pay listing fee before posting job
+Students
+
+Premium subscription unlocks:
+
+Unlimited AI interviews
+Priority visibility
+
+Sandbox payment gateway required.
+
+Non-Functional Requirements
+Performance
+Page load < 2 seconds
+API response < 500 ms
+Scalability
+Support multi-college deployment
+Modular microservice-ready backend
+Security
+HTTPS encryption
+Secure file uploads
+Role isolation
+Data validation
+Availability
+99% uptime target
+Technical Requirements
+Frontend
+Next.js / React
+Responsive UI
+Role-based dashboards
+Backend
+Node.js + Express
+REST APIs
+Modular services
+Database
+PostgreSQL relational schema
+AI Integration
+LLM APIs
+NLP resume parsing
+Data Models (High-Level)
+Users
+id
+role
+email
+password
+Students
+academic info
+skills
+resume
+Jobs
+recruiter_id
+eligibility
+deadline
+Applications
+student_id
+job_id
+status
+System Architecture (Conceptual)
+Frontend (Next.js)
+↓
+API Gateway (Express)
+↓
+Services Layer
+├── Auth
+├── Resume
+├── AI Engine
+├── Job Service
+└── Payments
+↓
+Database + AI APIs
+User Flow Overview
+Student Flow
+Signup → Build Resume → AI Feedback → Apply → Track Status → Interview Prep
+
+Recruiter Flow
+
+Register → Post Job → Filter Applicants → Schedule Interviews → Offer
+
+Admin Flow
+
+Approve Company → Monitor Dashboard → Generate Reports
+
+Risks & Mitigation
+Risk Mitigation
+AI inaccuracies Human-readable suggestions
+Resume parsing errors Manual edit option
+Payment failures Retry workflow
+High server load Caching + scaling
+Future Roadmap
+AI video interview evaluation
+Skill gap prediction
+Multi-college SaaS model
+Mobile application
+Recruiter AI shortlisting
+Acceptance Criteria
+Project considered complete when:
+
+All three user roles operational
+Resume builder functional
+AI analysis integrated
+Job lifecycle fully tracked
+Reports downloadable
+Payments simulated successfully
+
+Definition of Done
+✅ Feature implemented
+✅ API tested
+✅ UI responsive
+✅ Role access validated
+✅ Error handling complete
+✅ Documentation updated
+
+✅ Outcome
+
+HireLoop delivers a scalable AI-enabled campus hiring ecosystem, bridging education and industry through automation, analytics, and intelligent assistance.
+
+HireLoop — Advanced UI/UX Design Guide
+
+(Anti-Boring, Product-Level Visual Strategy)
+
+Design Philosophy (Core Principle)
+“Functional UI + Emotional Experience = Sticky Product”
+
+Most student projects fail because they:
+
+Copy dashboards from templates
+Use default Tailwind styling
+Ignore storytelling
+Your differentiation strategy:
+Narrative-driven UI (user feels progress)
+Context-aware visuals (UI adapts to state)
+Micro-interactions everywhere
+
+Visual Identity (Not Generic SaaS)
+🎯 Theme Direction
+Instead of:
+❌ Plain white dashboard
+❌ Blue buttons everywhere
+
+Go for:
+
+✅ “Futuristic Career OS”
+
+Slight glassmorphism
+Soft gradients
+Subtle motion
+Clean but expressive
+🎨 Color System (Strategic, Not Random)
+Purpose Color
+Primary Indigo / Deep Violet
+Accent Neon Cyan / Electric Blue
+Success Soft Green
+Warning Amber
+Background Off-black / Soft gray gradient
+Example:
+Background: #0f172a → #020617 (gradient)
+Primary: #6366f1
+Accent Glow: #22d3ee
+
+👉 Add glow effects + gradients, not flat colors.
+
+Typography System
+Stop using default fonts blindly.
+
+Use:
+Headings → Poppins / Sora
+Body → Inter
+Highlight → Slight letter spacing
+Style hierarchy:
+Element Style
+Hero Title Bold + Gradient Text
+Section Title Semi-bold
+Body Medium
+Labels Light
+
+Layout Strategy (Avoid “Box UI”)
+Most UIs:
+❌ Grid of boring cards
+
+Your approach:
+✅ Layered + Sectioned Layout
+
+Layout Pattern
+Sidebar (Minimal)
+
+Top Context Bar
++
+Dynamic Content Area
+Use:
+Asymmetry
+White space
+Floating panels
+Depth (shadows + blur)
+
+Component Design System
+🔘 Buttons
+Instead of:
+❌ Flat button
+
+Use:
+
+Gradient buttons
+Hover glow
+Slight scale animation
+
+Example:
+
+Hover → scale(1.05)
+Active → subtle press
+📦 Cards
+
+❌ Plain bordered cards
+✅ Glass cards:
+
+backdrop-blur
+soft shadow
+gradient border
+📊 Data Visualization
+
+DO NOT:
+❌ Use default charts
+
+INSTEAD:
+
+Animated progress bars
+Circular score indicators
+Gradient charts
+
+Page-by-Page UI Blueprint
+🎓 Student Dashboard
+Concept: “Career Command Center”
+Hero Section
+Instead of:
+❌ “Welcome User”
+
+Use:
+
+👉 “Your Placement Journey”
+
+Include:
+
+Progress bar (placement readiness)
+Current status (e.g., “3 applications active”)
+Motivational micro-copy
+Resume Section
+
+Make it feel like a builder tool, not a form.
+
+UI Ideas:
+Live preview on right
+Editable sections on left
+Drag-and-drop sections
+AI Resume Score
+
+Make it visually powerful:
+
+Circular progress ring (like fitness apps)
+Color-based score (red → green)
+Animated fill
+Job Tracker
+
+Instead of table:
+
+👉 Use timeline UI
+
+Applied → Shortlisted → Interview → Offer
+
+Each stage:
+
+Icon
+Color
+Animation when status changes
+AI Mock Interview
+
+Make it feel like:
+
+🎙️ “Virtual Interview Room”
+
+Dark theme
+Chat-style UI
+AI typing animation
+Real-time feedback meter
+🏢 Recruiter Dashboard
+Concept: “Hiring Control Panel”
+Job Posting
+
+Make it feel like:
+👉 “Create Opportunity”
+
+Multi-step form (progress indicator)
+Smart suggestions (auto-fill JD)
+Applicants View
+
+Instead of table:
+
+👉 Use candidate cards
+
+Each card:
+
+Profile snapshot
+Skills tags
+Match score badge
+Shortlisting UX
+Swipe/quick action buttons
+Bulk select with smooth animation
+🏫 Admin Dashboard
+Concept: “Placement Intelligence Hub”
+Metrics Section
+
+Use:
+
+Animated counters
+Graphs with gradients
+Monthly trends
+Reports
+
+Make reports feel premium:
+
+Export button with animation
+Preview before download
+
+Micro-Interactions (This is where magic happens)
+Add everywhere:
+Hover animations
+Loading skeletons
+Smooth transitions
+Button ripple effects
+Examples:
+Action Interaction
+Apply job Success toast + confetti
+Resume upload Progress animation
+AI analysis Typing effect
+Status change Timeline animation
+Motion Design (Secret Sauce)
+Use:
+
+Framer Motion
+Add:
+Page transitions
+Fade-in sections
+Stagger animations
+
+Avoid These Common Mistakes
+❌ Too many colors
+❌ No spacing
+❌ Overloaded dashboard
+❌ Default Tailwind look
+❌ No hierarchy
+
+Premium Touches (Game-Changer)
+✨ 1. Dynamic Greetings
+“Good Evening, Shristi 👋
+You’re 70% placement ready.”
+
+✨ 2. Smart Suggestions
+
+“Improve your resume by adding React projects.”
+
+✨ 3. Empty States
+
+Instead of blank:
+
+👉 Show illustrations + guidance
+
+✨ 4. Subtle Sound (optional)
+Click sounds
+Success chime
+
+UI Inspiration Direction
+Design references you should study:
+
+Linear App (clean SaaS UI)
+Stripe Dashboard (data clarity)
+Notion (minimal + powerful)
+Apple UI (spacing + polish)
+
+Final UI Strategy Summary
+Your UI should feel:
+✅ Smart
+✅ Alive
+✅ Guided
+✅ Premium
+✅ Non-template
+
+Not like:
+
+❌ College project
+❌ Bootstrap clone
+❌ Static dashboard
+
+🚀 Final Insight
+
+Good code gets you shortlisted.
+Great UI gets you remembered.
+
+

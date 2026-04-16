@@ -170,32 +170,6 @@ export default function Register() {
             </form>
           </Form>
 
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground font-medium">Or join with</span>
-            </div>
-          </div>
-
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-            type="button"
-            onClick={() => window.location.href = "/api/v1/auth/google"}
-            className="w-full py-2.5 px-4 bg-secondary/50 border border-border rounded-xl font-medium text-sm flex items-center justify-center gap-2.5 hover:bg-secondary transition-colors"
-            data-testid="button-google-register"
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-              <path d="M17.64 9.20455C17.64 8.56636 17.5827 7.95273 17.4764 7.36364H9V12.6505H13.8436C13.635 13.7755 13.0009 14.73 12.0477 15.3682V18.7909H14.9564C16.6582 17.2255 17.64 14.91 17.64 9.20455Z" fill="#4285F4"/>
-              <path d="M9 18C11.43 18 13.4673 17.1941 14.9564 15.7909L12.0477 12.3682C11.2418 12.9082 10.2109 13.2273 9 13.2273C6.65591 13.2273 4.67182 11.6373 3.96409 9.50727H0.957273V11.8382C2.44091 14.7832 5.48182 16.8136 9 18Z" fill="#34A853"/>
-              <path d="M3.96409 9.50727C3.78409 8.96727 3.68182 8.39045 3.68182 7.79545C3.68182 7.20045 3.78409 6.62364 3.96409 6.08364V3.75273H0.957273C0.347727 4.96636 0 6.34091 0 7.79545C0 9.25 0.347727 10.6245 0.957273 11.8382L3.96409 9.50727Z" fill="#FBBC05"/>
-              <path d="M9 3.57273C10.3214 3.57273 11.5077 4.02545 12.4405 4.91727L15.0218 2.33591C13.4632 0.887727 11.4259 0 9 0C5.48182 0 2.44091 2.03045 0.957273 4.97545L3.96409 7.30636C4.67182 5.17636 6.65591 3.57273 9 3.57273Z" fill="#EA4335"/>
-            </svg>
-            <span>Continue with Google</span>
-          </motion.button>
-
           <p className="text-center text-sm text-muted-foreground mt-5">
             Already have an account?{" "}
             <Link href="/login">

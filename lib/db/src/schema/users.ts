@@ -7,8 +7,7 @@ export const userRoleEnum = pgEnum("user_role", ["student", "recruiter", "admin"
 export const usersTable = pgTable("platform_users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
-  passwordHash: text("password_hash"), // Nullable for Google users
-  googleId: text("google_id").unique(), // Optional Google identifier
+  passwordHash: text("password_hash").notNull(),
   name: text("name").notNull(),
   role: userRoleEnum("role").notNull().default("student"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

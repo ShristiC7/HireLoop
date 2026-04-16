@@ -5,10 +5,8 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Save, FileText, Briefcase, GraduationCap, Code, Award, Download, Loader2 } from "lucide-react";
+import { Plus, Trash2, Save, FileText, Briefcase, GraduationCap, Code, Award, Download } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 
 interface ExperienceEntry { title: string; company: string; duration: string; description: string; }
 interface EducationEntry { degree: string; institution: string; year: string; gpa: string; }
@@ -29,7 +27,6 @@ export default function ResumeBuilder() {
   const [certifications, setCertifications] = useState<string[]>([]);
   const [newCert, setNewCert] = useState("");
   const [activeSection, setActiveSection] = useState("summary");
-  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     if (resume) {
@@ -53,54 +50,30 @@ export default function ResumeBuilder() {
     });
   };
 
-  const handlePrintPDF = async () => {
+  const handlePrintPDF = () => {
     const printContent = printRef.current;
-    if (!printContent || isExporting) return;
-    
-    setIsExporting(true);
-    try {
-      // Create a temporary clone to fix styling specifically for PDF export
-      const clone = printContent.cloneNode(true) as HTMLElement;
-      // Add a wrapper to enforce dimensions and high quality rendering
-      const wrapper = document.createElement('div');
-      wrapper.style.width = '794px'; // A4 width in pixels at 96 DPI
-      wrapper.style.padding = '40px';
-      wrapper.style.backgroundColor = 'white';
-      wrapper.style.position = 'absolute';
-      wrapper.style.left = '-9999px'; // Hide offscreen
-      
-      // Copy explicit styles we need for the PDF
-      clone.style.border = 'none';
-      clone.style.boxShadow = 'none';
-      clone.style.height = 'auto';
-      clone.style.margin = '0';
-      wrapper.appendChild(clone);
-      document.body.appendChild(wrapper);
-
-      const canvas = await html2canvas(wrapper, {
-        scale: 2, // High resolution
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-      
-      document.body.removeChild(wrapper);
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`${user?.name?.replace(/\s+/g, '_') ?? 'student'}_resume.pdf`);
-      
-      toast({ title: "PDF Exported Successfully" });
-    } catch (err) {
-      console.error("PDF generation failed", err);
-      toast({ title: "Failed to export PDF", variant: "destructive" });
-    } finally {
-      setIsExporting(false);
-    }
+    if (!printContent) return;
+    const originalBody = document.body.innerHTML;
+    document.body.innerHTML = `
+      <style>
+        body { font-family: 'Inter', sans-serif; color: #111; background: white; margin: 0; padding: 20px; }
+        h2 { font-size: 22px; font-weight: 700; margin: 0 0 4px; }
+        p { margin: 0; }
+        h3 { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #4f46e5; margin: 0 0 6px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+        .section { margin-bottom: 14px; }
+        .entry-title { font-size: 12px; font-weight: 600; }
+        .entry-sub { font-size: 11px; color: #6b7280; }
+        .entry-desc { font-size: 11px; color: #374151; margin-top: 2px; }
+        .tag { display: inline-block; font-size: 10px; color: #4f46e5; background: #eef2ff; padding: 1px 6px; border-radius: 99px; margin-right: 4px; }
+        .cert { display: inline-block; font-size: 10px; background: #eef2ff; color: #4f46e5; border-radius: 99px; padding: 2px 8px; margin: 2px; }
+        .header { text-align: center; border-bottom: 2px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 16px; }
+        @media print { body { padding: 0; } }
+      </style>
+      ${printContent.innerHTML}
+    `;
+    window.print();
+    document.body.innerHTML = originalBody;
+    window.location.reload();
   };
 
   const addExp = () => setExperience([...experience, { title: "", company: "", duration: "", description: "" }]);
@@ -135,12 +108,10 @@ export default function ResumeBuilder() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handlePrintPDF}
-              disabled={isExporting}
-              className="flex items-center gap-2 px-4 py-2.5 bg-secondary/50 border border-border text-foreground rounded-xl text-sm font-semibold hover:bg-secondary/70 transition-colors disabled:opacity-60"
+              className="flex items-center gap-2 px-4 py-2.5 bg-secondary/50 border border-border text-foreground rounded-xl text-sm font-semibold hover:bg-secondary/70 transition-colors"
               data-testid="button-export-pdf"
             >
-              {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />} 
-              {isExporting ? "Exporting..." : "Export PDF"}
+              <Download size={14} /> Export PDF
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}

@@ -149,9 +149,9 @@ Be honest and specific. Return ONLY the JSON, no other text.`,
 });
 
 router.post("/ai/cover-letter", requireAuth, requireRole("student"), async (req: AuthRequest, res): Promise<void> => {
-  const { jobDescription, companyName, jobTitle } = req.body;
-  if (!jobDescription || !companyName || !jobTitle) {
-    res.status(400).json({ error: "Missing required fields" });
+  const { jobDescription } = req.body;
+  if (!jobDescription) {
+    res.status(400).json({ error: "Job description is required" });
     return;
   }
 
@@ -163,10 +163,13 @@ router.post("/ai/cover-letter", requireAuth, requireRole("student"), async (req:
 
   const [resume] = await db.select().from(resumesTable).where(eq(resumesTable.studentId, student.id));
   
-  const resumeText = resume ? `
-Experience: ${JSON.stringify(resume.experience)}
-Education: ${JSON.stringify(resume.education)}
-Projects: ${JSON.stringify(resume.projects)}` : "No specific resume data.";
+  const context = `
+Name: ${student.name}
+Branch: ${student.branch}
+Skills: ${student.skills.join(", ")}
+Resume Summary: ${resume?.summary || "N/A"}
+Experience: ${JSON.stringify(resume?.experience || [])}
+  `.trim();
 
   try {
     const completion = await openai.chat.completions.create({
@@ -174,20 +177,19 @@ Projects: ${JSON.stringify(resume.projects)}` : "No specific resume data.";
       messages: [
         {
           role: "system",
-          content: "You are an expert career coach writing professional cover letters. Use the provided student information, resume, and job description to write a tailored, modern, compelling, and professional cover letter. Respond ONLY with the cover letter text, no metadata.",
+          content: "You are an expert career consultant. Write a professional, punchy, and tailored cover letter based on the user's profile and the job description provided. Use a modern tone, highlight relevant skills, and keep it under 300 words. Return only the cover letter text."
         },
         {
           role: "user",
-          content: `Write a cover letter for:\nCompany: ${companyName}\nRole: ${jobTitle}\n\nJob Description:\n${jobDescription}\n\nMy Profile:\nName: ${student.name}\nBranch: ${student.branch}\nSkills: ${student.skills.join(", ")}\n\nMy Resume Details:\n${resumeText}`,
-        },
-      ],
+          content: `User Profile:\n${context}\n\nJob Description:\n${jobDescription}`
+        }
+      ]
     });
 
-    const letter = completion.choices[0].message.content || "Could not generate cover letter.";
-    res.json({ coverLetter: letter.trim() });
+    res.json({ coverLetter: completion.choices[0].message.content });
   } catch (err) {
-    console.error("Cover letter generation failed:", err);
-    res.status(500).json({ error: "Failed to generate cover letter. Please try again." });
+    logger.error(err, "Cover letter generation failed");
+    res.status(500).json({ error: "Failed to generate cover letter" });
   }
 });
 

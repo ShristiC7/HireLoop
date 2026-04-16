@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +9,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { User, Linkedin, Github, GraduationCap, Code, Save, X, Plus } from "lucide-react";
+import { User, Linkedin, Github, GraduationCap, Code, Save, RefreshCw, Check } from "lucide-react";
+import { api } from "@/lib/api";
+import { useState } from "react";
 
 const BRANCHES = ["CSE", "ECE", "EE", "ME", "CE", "IT", "Chemical", "Aerospace"];
 const COMMON_SKILLS = ["JavaScript", "Python", "React", "Node.js", "Java", "C++", "Machine Learning", "SQL", "Git", "Docker", "TypeScript", "AWS"];
@@ -33,10 +35,29 @@ export default function StudentProfile() {
   const updateProfile = useUpdateStudentProfile();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  // FR-110: custom skill tag input state
-  const [customSkillInput, setCustomSkillInput] = useState("");
-  const customSkillRef = useRef<HTMLInputElement>(null);
+  const handleSyncGithub = async () => {
+    if (!form.getValues("githubUrl")) {
+      toast({ title: "Please enter a GitHub URL first", variant: "destructive" });
+      return;
+    }
+    
+    setIsSyncing(true);
+    try {
+      await api.post("/students/sync-github");
+      queryClient.invalidateQueries({ queryKey: getGetStudentProfileQueryKey() });
+      toast({ title: "GitHub Sync Successful", description: "Your skills and projects have been updated." });
+    } catch (err: any) {
+      toast({ 
+        title: "Sync Failed", 
+        description: err.response?.data?.error || "Make sure your GitHub URL is public.", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -62,31 +83,9 @@ export default function StudentProfile() {
   const toggleSkill = (skill: string) => {
     const current = form.getValues("skills");
     if (current.includes(skill)) {
-      form.setValue("skills", current.filter(s => s !== skill), { shouldDirty: true });
+      form.setValue("skills", current.filter(s => s !== skill));
     } else {
-      form.setValue("skills", [...current, skill], { shouldDirty: true });
-    }
-  };
-
-  // FR-110: Add a custom skill from the text input
-  const addCustomSkill = () => {
-    const trimmed = customSkillInput.trim();
-    if (!trimmed) return;
-    // Sanitize: allow letters, numbers, spaces, + . # -
-    const sanitized = trimmed.replace(/[^a-zA-Z0-9 .#+\-]/g, "").trim();
-    if (!sanitized) return;
-    const current = form.getValues("skills");
-    if (!current.map(s => s.toLowerCase()).includes(sanitized.toLowerCase())) {
-      form.setValue("skills", [...current, sanitized], { shouldDirty: true });
-    }
-    setCustomSkillInput("");
-    customSkillRef.current?.focus();
-  };
-
-  const handleCustomSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addCustomSkill();
+      form.setValue("skills", [...current, skill]);
     }
   };
 
@@ -96,10 +95,7 @@ export default function StudentProfile() {
         queryClient.invalidateQueries({ queryKey: getGetStudentProfileQueryKey() });
         toast({ title: "Profile updated successfully" });
       },
-      onError: (err: unknown) => {
-        const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Failed to update profile";
-        toast({ title: msg, variant: "destructive" });
-      },
+      onError: () => toast({ title: "Failed to update profile", variant: "destructive" }),
     });
   };
 
@@ -126,8 +122,7 @@ export default function StudentProfile() {
                   <User size={16} className="text-primary" />
                   <h2 className="font-semibold text-sm">Personal Information</h2>
                 </div>
-                {/* FR-109: mobile-first grid: 1 col on mobile, 2 on sm+ */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="name" render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-xs">Full Name</FormLabel>
@@ -143,7 +138,7 @@ export default function StudentProfile() {
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="bio" render={({ field }) => (
-                    <FormItem className="col-span-1 sm:col-span-2">
+                    <FormItem className="col-span-2">
                       <FormLabel className="text-xs">Bio</FormLabel>
                       <FormControl>
                         <textarea
@@ -165,8 +160,7 @@ export default function StudentProfile() {
                   <GraduationCap size={16} className="text-primary" />
                   <h2 className="font-semibold text-sm">Academic Details</h2>
                 </div>
-                {/* FR-109: mobile-first grid: 1 col on mobile, 3 on sm+ */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <FormField control={form.control} name="branch" render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-xs">Branch</FormLabel>
@@ -194,70 +188,13 @@ export default function StudentProfile() {
                 </div>
               </div>
 
-              {/* Skills — FR-110: tag input + custom skills */}
+              {/* Skills */}
               <div className="p-6 rounded-2xl bg-card border border-card-border">
                 <div className="flex items-center gap-2 mb-4">
                   <Code size={16} className="text-primary" />
                   <h2 className="font-semibold text-sm">Skills</h2>
-                  {currentSkills.length > 0 && (
-                    <span className="ml-auto text-xs text-muted-foreground">{currentSkills.length} selected</span>
-                  )}
                 </div>
-
-                {/* Selected skills as dismissible tags */}
-                {currentSkills.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {currentSkills.map(skill => (
-                      <motion.span
-                        key={skill}
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.8, opacity: 0 }}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-primary/15 text-primary border border-primary/30"
-                      >
-                        {skill}
-                        <button
-                          type="button"
-                          onClick={() => toggleSkill(skill)}
-                          className="ml-0.5 hover:text-destructive transition-colors"
-                          aria-label={`Remove ${skill}`}
-                          data-testid={`remove-skill-${skill.toLowerCase().replace(/\s+/g, "-")}`}
-                        >
-                          <X size={11} />
-                        </button>
-                      </motion.span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Custom skill input */}
-                <div className="flex gap-2 mb-4">
-                  <input
-                    ref={customSkillRef}
-                    type="text"
-                    value={customSkillInput}
-                    onChange={e => setCustomSkillInput(e.target.value)}
-                    onKeyDown={handleCustomSkillKeyDown}
-                    placeholder="Add a custom skill (e.g. PyTorch, Figma)…"
-                    maxLength={40}
-                    data-testid="input-custom-skill"
-                    className="flex-1 rounded-lg border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  />
-                  <motion.button
-                    type="button"
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.96 }}
-                    onClick={addCustomSkill}
-                    disabled={!customSkillInput.trim()}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-primary/30 bg-primary/10 text-primary text-xs font-medium disabled:opacity-40"
-                    data-testid="button-add-custom-skill"
-                  >
-                    <Plus size={13} /> Add
-                  </motion.button>
-                </div>
-
-                {/* Quick-select predefined skills */}
-                <p className="text-xs text-muted-foreground mb-2">Quick select:</p>
+                <p className="text-xs text-muted-foreground mb-3">Select your technical skills</p>
                 <div className="flex flex-wrap gap-2">
                   {COMMON_SKILLS.map(skill => (
                     <motion.button
@@ -285,8 +222,7 @@ export default function StudentProfile() {
                   <Linkedin size={16} className="text-primary" />
                   <h2 className="font-semibold text-sm">Social Links</h2>
                 </div>
-                {/* FR-109: mobile-first grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="linkedinUrl" render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-xs flex items-center gap-1.5"><Linkedin size={12} /> LinkedIn</FormLabel>
@@ -296,7 +232,20 @@ export default function StudentProfile() {
                   )} />
                   <FormField control={form.control} name="githubUrl" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs flex items-center gap-1.5"><Github size={12} /> GitHub</FormLabel>
+                      <FormLabel className="text-xs flex items-center justify-between">
+                        <span className="flex items-center gap-1.5"><Github size={12} /> GitHub</span>
+                        {profile?.githubUrl && (
+                          <button 
+                            type="button" 
+                            onClick={handleSyncGithub}
+                            disabled={isSyncing}
+                            className="text-[10px] text-primary flex items-center gap-1 hover:underline disabled:opacity-50"
+                          >
+                            <RefreshCw size={10} className={isSyncing ? "animate-spin" : ""} />
+                            {isSyncing ? "Syncing..." : "Sync Repos"}
+                          </button>
+                        )}
+                      </FormLabel>
                       <FormControl><Input placeholder="https://github.com/..." data-testid="input-github" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>

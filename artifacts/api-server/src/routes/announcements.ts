@@ -3,6 +3,7 @@ import { db, announcementsTable, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireAuth, requireRole, type AuthRequest } from "../middlewares/auth";
 import { CreateAnnouncementBody, DeleteAnnouncementParams } from "@workspace/api-zod";
+import { broadcastNotification } from "../lib/socket";
 
 const router: IRouter = Router();
 
@@ -45,6 +46,12 @@ router.post("/announcements", requireAuth, requireRole("admin"), async (req: Aut
   }).returning();
 
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, req.userId!));
+
+  broadcastNotification({
+    title: `New ${parsed.data.type.toUpperCase()} Announcement`,
+    message: parsed.data.title,
+    type: parsed.data.type,
+  });
 
   res.status(201).json({
     ...ann,

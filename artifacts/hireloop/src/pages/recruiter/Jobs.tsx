@@ -279,6 +279,17 @@ function JobRow({ job }: { job: Record<string, unknown> }) {
                         </div>
                       </div>
                       <div className="flex items-center gap-3 shrink-0 ml-3">
+                        <div className={cn(
+                          "flex flex-col items-center justify-center w-12 h-12 rounded-xl border",
+                          {
+                            "bg-green-500/10 border-green-500/20 text-green-400": (app as any).matchScore >= 80,
+                            "bg-amber-500/10 border-amber-500/20 text-amber-400": (app as any).matchScore >= 50 && (app as any).matchScore < 80,
+                            "bg-secondary border-border text-muted-foreground": (app as any).matchScore < 50
+                          }
+                        )} title="Compatibility Match Score">
+                          <span className="text-[10px] uppercase font-bold opacity-70">Match</span>
+                          <span className="text-sm font-bold">{(app as any).matchScore}%</span>
+                        </div>
                         <select
                           value={app.status}
                           onChange={(e) => handleStatusChange(app.id, e.target.value, app.status)}

@@ -5,6 +5,36 @@ import { requireAuth, type AuthRequest } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
+function predictCareerPaths(skills: string[], branch: string) {
+  const s = skills.map(sk => sk.toLowerCase());
+  const roles = [
+    { title: "Frontend Engineer", keywords: ["react", "typescript", "javascript", "tailwind", "next.js", "css"] },
+    { title: "Backend Engineer", keywords: ["node.js", "express", "postgresql", "java", "spring", "golang", "redis"] },
+    { title: "Full Stack Developer", keywords: ["react", "node.js", "javascript", "sql", "fullstack", "next.js"] },
+    { title: "Data Scientist", keywords: ["python", "machine learning", "tensorflow", "pytorch", "data", "pandas"] },
+    { title: "DevOps Engineer", keywords: ["docker", "kubernetes", "aws", "terraform", "ci/cd", "linux"] },
+    { title: "QA Automation", keywords: ["selenium", "cypress", "testing", "quality", "automation"] },
+  ];
+
+  return roles.map(role => {
+    const matchCount = role.keywords.filter(k => s.includes(k)).length;
+    let score = (matchCount / role.keywords.length) * 100;
+    
+    // Branch boost
+    if (branch === "CSE" && ["Frontend Engineer", "Backend Engineer", "Full Stack Developer", "Data Scientist"].includes(role.title)) {
+      score += 15;
+    }
+
+    return {
+      title: role.title,
+      match: Math.round(Math.min(score, 98)),
+      relevance: score > 50 ? "high" : score > 20 ? "medium" : "low"
+    };
+  })
+  .sort((a, b) => b.match - a.match)
+  .slice(0, 3);
+}
+
 router.get("/dashboard/student", requireAuth, async (req: AuthRequest, res): Promise<void> => {
   const [student] = await db.select().from(studentsTable).where(eq(studentsTable.userId, req.userId!));
   if (!student) {
@@ -46,6 +76,7 @@ router.get("/dashboard/student", requireAuth, async (req: AuthRequest, res): Pro
     recentApplications: enrichedApps,
     recommendedJobs: enrichedJobs,
     placementReadiness: Math.round(placementReadiness),
+    careerPathPredictions: predictCareerPaths(student.skills, student.branch),
   });
 });
 
