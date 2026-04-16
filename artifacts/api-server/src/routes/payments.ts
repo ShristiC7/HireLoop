@@ -3,6 +3,11 @@ import { db, paymentsTable, usersTable } from "@workspace/db";
 import { eq, and, desc } from "drizzle-orm";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
 import crypto from "crypto";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_mock", {
+  apiVersion: "2024-12-18.acacia",
+});
 
 const router: IRouter = Router();
 
@@ -65,22 +70,11 @@ router.get("/payments/check-premium", requireAuth, async (req: AuthRequest, res)
   res.json({ isPremium, expiresAt });
 });
 
-router.post("/payments/process", requireAuth, async (req: AuthRequest, res): Promise<void> => {
-  const { type, cardNumber, cardExpiry, cardCvv, cardName } = req.body;
+router.post("/payments/create-checkout-session", requireAuth, async (req: AuthRequest, res): Promise<void> => {
+  const { type } = req.body;
 
   if (!type || !["listing_fee", "premium_monthly", "premium_yearly"].includes(type)) {
     res.status(400).json({ error: "Invalid payment type" });
-    return;
-  }
-
-  if (!cardNumber || !cardExpiry || !cardCvv || !cardName) {
-    res.status(400).json({ error: "Card details required" });
-    return;
-  }
-
-  const cleanCard = cardNumber.replace(/\s/g, "");
-  if (cleanCard.length < 16) {
-    res.status(400).json({ error: "Invalid card number" });
     return;
   }
 
@@ -89,30 +83,92 @@ router.post("/payments/process", requireAuth, async (req: AuthRequest, res): Pro
     premium_monthly: 299,
     premium_yearly: 2499,
   };
+  
+  const names: Record<string, string> = {
+    listing_fee: "Job Post Listing Engine",
+    premium_monthly: "HireLoop Premium (Monthly)",
+    premium_yearly: "HireLoop Premium (Yearly)",
+  };
 
   const amount = amounts[type];
-  const transactionId = `TXN_${crypto.randomBytes(8).toString("hex").toUpperCase()}`;
+  const origin = req.headers.origin || "http://localhost:5173";
 
-  await new Promise(resolve => setTimeout(resolve, 800));
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "inr",
+            product_data: {
+              name: names[type],
+            },
+            unit_amount: amount * 100, // Stripe expects paise
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&type=${type}`,
+      cancel_url: `${origin}`,
+      metadata: {
+        userId: req.userId!.toString(),
+        type,
+      },
+    });
 
-  const [payment] = await db
-    .insert(paymentsTable)
-    .values({
-      userId: req.userId!,
-      type: type as "listing_fee" | "premium_monthly" | "premium_yearly",
-      amount,
-      status: "completed",
-      transactionId,
-      metadata: JSON.stringify({ cardLast4: cleanCard.slice(-4) }),
-    })
-    .returning();
+    res.json({ url: session.url });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
-  res.status(201).json({
-    success: true,
-    payment,
-    message: `Payment of ₹${amount} processed successfully`,
-    transactionId,
-  });
+router.post("/payments/verify-session", requireAuth, async (req: AuthRequest, res): Promise<void> => {
+  const { sessionId } = req.body;
+  if (!sessionId) {
+    res.status(400).json({ error: "No session ID provided" });
+    return;
+  }
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    
+    if (session.payment_status === "paid") {
+      const type = session.metadata?.type as "listing_fee" | "premium_monthly" | "premium_yearly";
+      const userId = parseInt(session.metadata?.userId || "0", 10);
+      const amount = (session.amount_total || 0) / 100;
+      
+      if (userId !== req.userId) {
+         res.status(403).json({ error: "Unauthorized session" });
+         return;
+      }
+      
+      // Store in DB
+      const transactionId = session.payment_intent as string || `TXN_${crypto.randomBytes(8).toString("hex").toUpperCase()}`;
+      
+      // Prevent duplicates
+      const existing = await db.select().from(paymentsTable).where(eq(paymentsTable.transactionId, transactionId));
+      if (existing.length > 0) {
+        res.json({ success: true, message: "Payment already recorded" });
+        return;
+      }
+
+      await db.insert(paymentsTable).values({
+        userId,
+        type,
+        amount,
+        status: "completed",
+        transactionId,
+        metadata: JSON.stringify({ stripeSessionId: session.id }),
+      });
+
+      res.json({ success: true, message: "Payment verified successfully" });
+    } else {
+      res.status(400).json({ error: "Payment not completed" });
+    }
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;

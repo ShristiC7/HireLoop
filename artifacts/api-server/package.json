@@ -27,6 +27,7 @@
     "openai": "^6.34.0",
     "pino": "^9",
     "pino-http": "^10",
+    "stripe": "^22.0.1",
     "ws": "^8.20.0"
   },
   "devDependencies": {
