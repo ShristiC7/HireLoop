@@ -27,7 +27,18 @@ app.use(
     },
   }),
 );
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        "script-src": ["'self'", "'unsafe-inline'", "https://accounts.google.com/gsi/client"],
+        "frame-src": ["'self'", "https://accounts.google.com/gsi/"],
+        "connect-src": ["'self'", "https://accounts.google.com/gsi/"],
+      },
+    },
+  })
+);
 app.use(cors({
   origin: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : "*",
   credentials: true,
