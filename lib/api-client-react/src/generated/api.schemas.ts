@@ -134,6 +134,7 @@ export interface Resume {
   projects: ProjectEntry[];
   certifications: string[];
   languages: string[];
+  skills: string[];
   atsScore?: number;
   lastUpdated?: string;
 }
@@ -145,6 +146,7 @@ export interface UpdateResumeBody {
   projects?: ProjectEntry[];
   certifications?: string[];
   languages?: string[];
+  skills?: string[];
 }
 
 export type JobJobType = (typeof JobJobType)[keyof typeof JobJobType];
