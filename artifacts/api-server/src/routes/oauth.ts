@@ -63,7 +63,7 @@ router.post("/oauth/google", async (req, res): Promise<void> => {
         await db.insert(recruitersTable).values({
           userId: user.id,
           name: name,
-          companyName: "Pending Setup",
+          company: "Pending Setup",
           email: email,
         });
       }

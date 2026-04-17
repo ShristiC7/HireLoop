@@ -37,6 +37,7 @@ app.use(
         "connect-src": ["'self'", "https://accounts.google.com/gsi/"],
       },
     },
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
   })
 );
 app.use(cors({
