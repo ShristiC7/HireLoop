@@ -73,7 +73,7 @@ router.get("/admin/reports/applications", requireAuth, requireRole("admin"), asy
       jobTitle: jobsTable.title,
       company: jobsTable.company,
       status: applicationsTable.status,
-      appliedAt: applicationsTable.createdAt,
+      appliedAt: applicationsTable.appliedAt,
     })
     .from(applicationsTable)
     .innerJoin(studentsTable, eq(studentsTable.id, applicationsTable.studentId))
