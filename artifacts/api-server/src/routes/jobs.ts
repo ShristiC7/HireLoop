@@ -121,7 +121,7 @@ router.patch("/jobs/:jobId/approve", requireAuth, requireRole("admin"), async (r
     logger.warn({ error, jobId }, "Failed to send job approval email");
   }
 
-  res.json(await enrichJobWithCount(job));
+  res.json((await enrichJobsWithCounts([job]))[0]);
 });
 
 router.patch("/jobs/:jobId/reject", requireAuth, requireRole("admin"), async (req: AuthRequest, res): Promise<void> => {
@@ -154,7 +154,7 @@ router.patch("/jobs/:jobId/reject", requireAuth, requireRole("admin"), async (re
     logger.warn({ error, jobId }, "Failed to send job rejection email");
   }
 
-  res.json(await enrichJobWithCount(job));
+  res.json((await enrichJobsWithCounts([job]))[0]);
 });
 
 router.get("/jobs/:jobId", async (req, res): Promise<void> => {
