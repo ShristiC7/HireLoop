@@ -30,7 +30,7 @@ export default function Register() {
   const registerMutation = useRegister();
 
   const form = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema as any),
     defaultValues: { name: "", email: "", password: "", role: "student" },
   });
 
