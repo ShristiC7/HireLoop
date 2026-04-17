@@ -1,6 +1,11 @@
 import { db, usersTable } from "./index";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+import path from "path";
+import { config } from "dotenv";
+
+// Load .env from project root
+config({ path: path.join(process.cwd(), "../../.env") });
 
 async function main() {
   console.log("Seeding admin user...");

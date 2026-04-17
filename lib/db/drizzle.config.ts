@@ -1,5 +1,9 @@
 import { defineConfig } from "drizzle-kit";
 import path from "path";
+import { config } from "dotenv";
+
+// Load .env from project root
+config({ path: path.join(__dirname, "../../.env") });
 
 const url = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
 
