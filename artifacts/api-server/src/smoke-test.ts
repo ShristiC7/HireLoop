@@ -25,7 +25,7 @@ async function runTests() {
         role: "student",
       }),
     });
-    const regData = await regRes.json();
+    const regData = await regRes.json() as any;
     if (regRes.status !== 201) throw new Error(`Registration failed: ${JSON.stringify(regData)}`);
     console.log("✅ Registration successful");
 
@@ -39,7 +39,7 @@ async function runTests() {
         password: password,
       }),
     });
-    const loginData = await loginRes.json();
+    const loginData = await loginRes.json() as any;
     if (loginRes.status !== 200) throw new Error(`Login failed: ${JSON.stringify(loginData)}`);
     studentToken = loginData.token;
     console.log("✅ Login successful");
@@ -65,7 +65,7 @@ async function runTests() {
         password: adminPassword,
       }),
     });
-    const adminLoginData = await adminLoginRes.json();
+    const adminLoginData = await adminLoginRes.json() as any;
     if (adminLoginRes.status !== 200) {
         console.warn("⚠️ Admin login failed. Ensure admin is seeded.");
     } else {
