@@ -71,7 +71,10 @@ router.get("/students/resume", requireAuth, requireRole("student"), async (req: 
     resume = newResume;
   }
 
-  res.json(resume);
+  res.json({
+    ...resume,
+    skills: student.skills || []
+  });
 });
 
 router.put("/students/resume", requireAuth, requireRole("student"), async (req: AuthRequest, res): Promise<void> => {
@@ -87,9 +90,9 @@ router.put("/students/resume", requireAuth, requireRole("student"), async (req: 
     return;
   }
 
-  const data = parsed.data;
-  const skillCount = (data.experience?.length ?? 0) + (data.projects?.length ?? 0);
-  const atsScore = Math.min(100, 20 + skillCount * 15 + (data.summary ? 10 : 0) + (data.certifications?.length ?? 0) * 5);
+  const { skills, ...data } = parsed.data;
+  const skillCount = (data.experience?.length ?? 0) + (data.projects?.length ?? 0) + (skills?.length ?? 0);
+  const atsScore = Math.min(100, 20 + skillCount * 12 + (data.summary ? 10 : 0) + (data.certifications?.length ?? 0) * 5);
 
   const [existing] = await db.select().from(resumesTable).where(eq(resumesTable.studentId, student.id));
   let updated;
@@ -104,7 +107,11 @@ router.put("/students/resume", requireAuth, requireRole("student"), async (req: 
       .returning();
   }
 
-  await db.update(studentsTable).set({ resumeScore: atsScore }).where(eq(studentsTable.id, student.id));
+  // Synchronize skills and resume score back to student profile
+  await db.update(studentsTable).set({ 
+    resumeScore: atsScore,
+    ...(skills ? { skills } : {})
+  }).where(eq(studentsTable.id, student.id));
 
   res.json(updated);
 });
