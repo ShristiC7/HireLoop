@@ -126,22 +126,28 @@ export default function Recommendations() {
         {!isLoading && data && (
           <>
             {data.recommendations.length === 0 ? (
-              <div className="text-center py-16 space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-                  <Sparkles size={28} className="text-primary/60" />
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-20 px-6 rounded-3xl bg-card border border-dashed border-card-border"
+              >
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center mx-auto mb-6">
+                  <Sparkles size={32} className="text-primary/60" />
                 </div>
-                <div>
-                  <p className="font-semibold">No recommendations yet</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {data.message ?? "Complete your profile with skills, CGPA, and branch to get personalized recommendations."}
-                  </p>
-                </div>
+                <h2 className="text-xl font-bold font-serif mb-2">Finding your perfect match...</h2>
+                <p className="text-muted-foreground text-sm max-w-sm mx-auto mb-8 leading-relaxed">
+                  {data.message ?? "We couldn't find any jobs matching your profile yet. Complete your profile with skills, branch, and CGPA to unlock AI-powered recommendations."}
+                </p>
                 <Link href="/student/profile">
-                  <button className="px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-medium hover:opacity-90 transition-opacity">
-                    Complete Profile
-                  </button>
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20"
+                  >
+                    Go to Profile <ChevronRight size={16} />
+                  </motion.button>
                 </Link>
-              </div>
+              </motion.div>
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
