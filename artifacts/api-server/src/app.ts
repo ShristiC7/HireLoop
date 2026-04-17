@@ -49,7 +49,7 @@ const frontendPath = path.join(__dirname, "../../hireloop/dist/public");
 app.use(express.static(frontendPath));
 
 // Handle SPAs by serving index.html for unknown routes
-app.get("(.*)", (req, res) => {
+app.get("*path", (req, res) => {
   if (req.url.startsWith("/api")) return;
   res.sendFile(path.join(frontendPath, "index.html"), (err) => {
     if (err) {
