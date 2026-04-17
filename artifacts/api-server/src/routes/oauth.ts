@@ -46,7 +46,8 @@ router.post("/oauth/google", async (req, res): Promise<void> => {
       // Create new user if not exists
       [user] = await db.insert(usersTable).values({
         email,
-        password: "", // No password for OAuth users
+        passwordHash: "", // No password for OAuth users
+        name,
         role: requestedRole,
       }).returning();
 
