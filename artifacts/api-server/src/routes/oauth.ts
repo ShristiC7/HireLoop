@@ -56,6 +56,7 @@ router.post("/oauth/google", async (req, res): Promise<void> => {
         await db.insert(studentsTable).values({
           userId: user.id,
           name: name,
+          email: email,
           branch: "Other", // Default branch
           batch: new Date().getFullYear().toString(),
           cgpa: 0,
