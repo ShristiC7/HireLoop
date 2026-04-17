@@ -1,13 +1,295 @@
-# HireLoop Configuration
+# 🚀 HireLoop — End-to-End Campus Recruitment Portal
+(#26ENHL3: Problem Statement 3)
 
-See `config.env` for all environment setup required.
+HireLoop is a full-stack **AI-powered campus placement management platform** designed to streamline recruitment workflows between **students, recruiters, and college placement cells**.
 
-## Local Development
-1. Copy `config.env` to `.env` and fill the variables
-2. Run database migrations: `pnpm build && pnpm run start` in `lib/db`
-3. Run backend: `cd artifacts/api-server && pnpm dev`
-4. Run frontend: `cd artifacts/hireloop && pnpm dev`
+The platform digitizes the entire placement lifecycle — from resume creation and job applications to AI interview preparation and placement analytics — within a single ecosystem.
 
-## 📚 Documentation & Resources
-- **[Deployment Guide (Render)](RENDER_DEPLOYMENT.md)** — Step-by-step instructions for hosting on Render.
-- **[Technical Stack & Implementation](TECH_STACK_RESOURCES.md)** — A deep dive for beginners into how we built HireLoop.
+---
+## Team Details:
+Name: Universe of Innovation
+
+| Member | Role  |
+|------|----------------------|
+| Shubham  Verma |  Frontend  |
+| Shristi Choudhary |  Backend , Ai Integrations , Database |
+
+---
+## 📌 Table of Contents
+
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [User Roles](#-user-roles)
+- [AI Capabilities](#-ai-capabilities)
+- [Tech Stack](#-tech-stack)
+- [System Architecture](#-system-architecture)
+- [Installation](#-installation)
+- [Environment Variables](#-environment-variables)
+- [Project Structure](#-project-structure)
+- [API Modules](#-api-modules)
+- [Future Enhancements](#-future-enhancements)
+
+---
+
+## 🧠 Overview
+
+**HireLoop** connects three stakeholders involved in campus hiring:
+
+- 🎓 Students preparing for placements
+- 🏢 Companies recruiting talent
+- 🏫 Placement Cells managing recruitment
+
+It combines a traditional placement portal with modern AI features such as:
+
+- Resume analysis
+- Interview simulations
+- Job matching intelligence
+- Automated placement analytics
+
+---
+
+## ✨ Key Features
+
+### 👩‍🎓 Student Portal
+- Profile creation and management
+- Resume builder with downloadable PDF
+- AI Resume Analyzer (ATS scoring & suggestions)
+- One-click job applications
+- Application status tracking
+- AI Mock Interview preparation
+- Smart job recommendations
+- Cover letter auto-generation
+<img width="1915" height="991" alt="image" src="https://github.com/user-attachments/assets/672867d5-4259-4939-90c1-27953f3296f3" />
+
+
+---
+
+### 🏢 Recruiter Portal
+- Company registration & onboarding
+- Job posting with eligibility filters
+- Applicant filtering (skills, CGPA, branch)
+- Candidate shortlisting
+- Interview scheduling
+- Automated email notifications
+
+
+---
+
+### 🏫 Placement Cell Dashboard
+- Recruiter approval system
+- Placement analytics dashboard
+- Student placement statistics
+- Downloadable placement reports
+- Announcement board for students
+
+---
+
+### 💳 Payments
+- Company job listing fee (sandbox payment)
+- Student premium subscription:
+  - Unlimited AI interviews
+  - Priority recruiter visibility
+
+---
+
+## 🤖 AI Capabilities
+
+- Resume ATS scoring
+- Resume ↔ Job Description matching
+- Keyword gap analysis
+- AI-generated cover letters
+- Mock interview evaluation & feedback
+- Smart job recommendation engine
+
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
+|------|------------|
+| Frontend | Next.js / React |
+| Styling | Tailwind CSS |
+| Backend | Node.js + Express |
+| Database | Supabse |
+| Authentication | JWT + Role-Based Access |
+| AI Integration | LLM APIs |
+| File Storage | Supabase |
+| Payments | Stripe / Razorpay Sandbox |
+
+---
+
+## 🏗 System Architecture
+```
+
+Client (Next.js)
+│
+▼
+Backend API (Node.js + Express)
+│
+├── Authentication Service
+├── Resume Service
+├── AI Processing Service
+├── Job & Application Service
+└── Payment Service
+│
+▼
+Database (Supabase)
+│
+▼
+AI APIs / External Services
+
+```
+---
+## Architecture overview
+```
+┌─────────────────────────────────────────────────────────┐
+│                   Client Layer                          │
+│          Next.js 14 (App Router) + Tailwind CSS         │
+│    Student Portal │ Recruiter Portal │ Admin Dashboard  │
+└──────────────────────────┬──────────────────────────────┘
+                           │ HTTPS / REST
+┌──────────────────────────▼──────────────────────────────┐
+│                   API Gateway Layer                     │
+│          Node.js + Express   |   Rate Limiter           │
+│          JWT Middleware       |   Role Guard             │
+└──────┬───────────┬───────────┬───────────┬──────────────┘
+       │           │           │           │
+┌──────▼───┐ ┌────▼────┐ ┌───▼───┐ ┌────▼──────┐
+│ Auth     │ │ Student │ │ Job & │ │ AI        │
+│ Service  │ │ Service │ │ App   │ │ Service   │
+│          │ │         │ │ Svc   │ │           │
+└──────────┘ └─────────┘ └───────┘ └───────────┘
+       │           │           │           │
+┌──────▼───┐ ┌────▼────┐ ┌───▼───┐ ┌────▼──────┐
+│ Recruiter│ │ Resume  │ │Payment│ │ Admin     │
+│ Service  │ │ Service │ │ Svc   │ │ Service   │
+└──────────┘ └─────────┘ └───────┘ └───────────┘
+                           │
+              ┌────────────▼────────────┐
+              │     Data Layer          │
+              │  Supabase (Primary)   │
+              │  Redis (Cache/Sessions) │
+              └────────────┬────────────┘
+                           │
+              ┌────────────▼────────────┐
+              │   External Services     │
+              │  OpenAI API  │ Stripe   │
+              │  Cloud CDN   │ Nodemailer│
+              └─────────────────────────┘
+
+ ```
+## ⚙️ Installation
+
+### 1️⃣ Clone Repository
+
+```bash
+git clone https://github.com/ShristiC7/HireLoop.git
+cd HireLoop
+```
+### 2️⃣ Install Dependencies
+Backend
+
+```bash
+cd server
+npm install
+
+```
+Frontend
+
+```bash
+cd client
+npm install
+
+```
+### 3️⃣ Run Development Servers
+
+Backend:
+
+```bash
+npm run dev
+
+```
+Frontend:
+
+```bash
+npm run dev
+
+```
+---
+### 🔐 Environment Variables
+
+Create a .env file in the server directory:
+
+```bash
+PORT=5000
+DATABASE_URL=
+JWT_SECRET=
+OPENAI_API_KEY=
+PAYMENT_SECRET_KEY=
+CLOUD_STORAGE_KEY=
+
+```
+---
+## 📁 Project Structure
+```
+HireLoop/
+│
+├── client/                 # Frontend (Next.js)
+│   ├── components/
+│   ├── pages/
+│   ├── services/
+│   └── styles/
+│
+├── server/                 # Backend (Node.js)
+│   ├── controllers/
+│   ├── routes/
+│   ├── models/
+│   ├── middleware/
+│   ├── services/
+│   └── utils/
+│
+└── README.md
+```
+---
+## 🔌 API Modules
+
+- Authentication API  
+- Student Profile API  
+- Resume Builder API  
+- Job Management API  
+- Application Tracking API  
+- Interview Scheduling API  
+- AI Analysis API  
+- Payment API  
+- Admin Analytics API  
+
+---
+## 🌐 Live Deployment
+
+🚀 Frontend: [https://hire-loop.onrender.com/](https://hire-loop.onrender.com/)
+
+⚙️ Backend:[ https://hireloop-api.onrender.com](https://hireloop-platform.onrender.com/)
+
+---- 
+## ⚠️ Known Limitations
+
+HireLoop is currently in active development and certain production-level integrations are still being stabilized.
+
+- 💳 Payment Gateway Integration Pending
+Razorpay integration is not fully connected yet. Payment flows are currently in sandbox/mock mode.
+- 🏫 Placement Cell Dashboard Stability Issues
+The admin/placement cell dashboard is partially non-functional and requires backend alignment for full feature execution.
+- 🤖 AI Question Generation Rate Limits
+AI-powered interview question generation may occasionally fail due to API rate limits or quota exhaustion under heavy usage.
+
+-----
+## 🚀 Future Enhancements
+
+- Video interview analysis (AI)
+- Skill gap prediction engine
+- Multi-college SaaS support
+- Recruiter AI auto-shortlisting
+- Placement performance forecasting
+- Mobile application
+Placement performance forecasting
+Mobile application
