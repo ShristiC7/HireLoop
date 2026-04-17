@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useListJobs, useApplyToJob, getListJobsQueryKey, useGetStudentProfile } from "@workspace/api-client-react";
+import { useListJobs, useApplyToJob, getListJobsQueryKey } from "@workspace/api-client-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { Search, MapPin, DollarSign, Clock, Briefcase, Filter, X, CheckCircle, Zap, Sparkles } from "lucide-react";
+import { Search, MapPin, DollarSign, Clock, Briefcase, Filter, X, CheckCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,7 +12,7 @@ import { formatDistanceToNow } from "date-fns";
 const BRANCHES = ["All", "CSE", "ECE", "EE", "ME", "CE", "IT"];
 const JOB_TYPES = ["all", "fulltime", "internship", "contract"];
 
-function JobCard({ job, onApply, applying, matchScore }: { job: Record<string, unknown>; onApply: (id: number) => void; applying: boolean; matchScore?: number }) {
+function JobCard({ job, onApply, applying }: { job: Record<string, unknown>; onApply: (id: number) => void; applying: boolean }) {
   const j = job as { id: number; title: string; company: string; location?: string; salaryMin?: number; salaryMax?: number; jobType: string; eligibleBranches: string[]; minCgpa: number; skills: string[]; deadline: string; applicantCount: number };
 
   return (
@@ -37,38 +37,10 @@ function JobCard({ job, onApply, applying, matchScore }: { job: Record<string, u
           <h3 className="font-semibold text-foreground">{j.title}</h3>
           <p className="text-sm text-muted-foreground mt-0.5">{j.company}</p>
         </div>
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shrink-0 relative">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shrink-0">
           <Briefcase size={18} className="text-primary" />
-          {matchScore !== undefined && matchScore > 70 && (
-            <div className="absolute -top-2 -right-2 w-5 h-5 bg-accent rounded-full flex items-center justify-center shadow-lg animate-pulse">
-              <Sparkles size={10} className="text-white" />
-            </div>
-          )}
         </div>
       </div>
-
-      {matchScore !== undefined && (
-        <div className="flex items-center gap-2 mb-2">
-          <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
-            <motion.div 
-              initial={{ width: 0 }}
-              animate={{ width: `${matchScore}%` }}
-              className={cn("h-full", {
-                "bg-green-500": matchScore >= 80,
-                "bg-amber-500": matchScore >= 50 && matchScore < 80,
-                "bg-muted-foreground": matchScore < 50
-              })}
-            />
-          </div>
-          <span className={cn("text-[10px] font-bold uppercase", {
-            "text-green-500": matchScore >= 80,
-            "text-amber-600": matchScore >= 50 && matchScore < 80,
-            "text-muted-foreground": matchScore < 50
-          })}>
-            {matchScore}% Match
-          </span>
-        </div>
-      )}
 
       <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
         {j.location && <span className="flex items-center gap-1"><MapPin size={11} />{j.location}</span>}
@@ -108,12 +80,10 @@ export default function StudentJobs() {
   const [search, setSearch] = useState("");
   const [branch, setBranch] = useState("All");
   const [jobType, setJobType] = useState("all");
-  const [showSmart, setShowSmart] = useState(false);
   const [applyingId, setApplyingId] = useState<number | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const applyMutation = useApplyToJob();
-  const { data: profile } = useGetStudentProfile();
 
   const params: { search?: string; branch?: string } = {};
   if (search) params.search = search;
@@ -121,41 +91,7 @@ export default function StudentJobs() {
 
   const { data: jobs, isLoading } = useListJobs(params);
 
-  const calculateMatchScore = (job: any) => {
-    if (!profile) return undefined;
-    
-    let score = 0;
-    
-    // 1. Branch Match (30%)
-    const branchMatch = job.eligibleBranches.includes(profile.branch) || job.eligibleBranches.includes("All");
-    if (branchMatch) score += 30;
-
-    // 2. CGPA Eligibility (20%)
-    if (profile.cgpa >= job.minCgpa) score += 20;
-
-    // 3. Skill Overlap (50%)
-    if (job.skills.length > 0) {
-      const studentSkills = new Set(profile.skills.map(s => s.toLowerCase()));
-      const overlap = job.skills.filter((s: string) => studentSkills.has(s.toLowerCase())).length;
-      score += Math.round((overlap / job.skills.length) * 50);
-    } else {
-      score += 25; // Default if no skills listed
-    }
-
-    return Math.min(score, 100);
-  };
-
-  const processedJobs = useMemo(() => {
-    let result = (jobs ?? []).filter(j => jobType === "all" || j.jobType === jobType);
-    
-    if (showSmart && profile) {
-      return result
-        .map(j => ({ ...j, _matchScore: calculateMatchScore(j) }))
-        .sort((a, b) => (b._matchScore || 0) - (a._matchScore || 0));
-    }
-    
-    return result;
-  }, [jobs, jobType, showSmart, profile]);
+  const filtered = (jobs ?? []).filter(j => jobType === "all" || j.jobType === jobType);
 
   const handleApply = (jobId: number) => {
     setApplyingId(jobId);
@@ -176,65 +112,46 @@ export default function StudentJobs() {
   return (
     <DashboardLayout requiredRole="student">
       <div className="max-w-5xl mx-auto space-y-6">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold font-serif">Job Board</h1>
-            <p className="text-muted-foreground text-sm mt-1">Browse {processedJobs.length} open positions</p>
-          </div>
-          
-          <button 
-            onClick={() => setShowSmart(!showSmart)}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-semibold transition-all border shadow-sm",
-              showSmart 
-                ? "bg-accent/10 border-accent/40 text-accent ring-2 ring-accent/20" 
-                : "bg-card border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
-            )}
-            data-testid="toggle-smart-recommendations"
-          >
-            <Zap size={16} className={showSmart ? "fill-accent" : ""} />
-            Smart Recommendations
-            {showSmart && <Sparkles size={14} className="animate-pulse" />}
-          </button>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <h1 className="text-2xl font-bold font-serif">Job Board</h1>
+          <p className="text-muted-foreground text-sm mt-1">Browse {filtered.length} open positions</p>
         </motion.div>
 
         {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search roles, companies..."
-              className="pl-9 bg-background/50"
+              className="pl-9"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               data-testid="input-search-jobs"
             />
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex gap-1.5 flex-wrap">
-              {BRANCHES.map(b => (
-                <button
-                  key={b}
-                  onClick={() => setBranch(b)}
-                  className={cn("px-2.5 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium border transition-all", branch === b ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/30")}
-                  data-testid={`filter-branch-${b.toLowerCase()}`}
-                >
-                  {b}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-1.5">
-              {JOB_TYPES.map(t => (
-                <button
-                  key={t}
-                  onClick={() => setJobType(t)}
-                  className={cn("px-2.5 py-1.5 rounded-lg text-[10px] sm:text-xs font-medium border transition-all capitalize whitespace-nowrap", jobType === t ? "border-accent bg-accent/10 text-accent" : "border-border text-muted-foreground hover:border-accent/30")}
-                  data-testid={`filter-type-${t}`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
+          <div className="flex gap-2 flex-wrap">
+            {BRANCHES.map(b => (
+              <button
+                key={b}
+                onClick={() => setBranch(b)}
+                className={cn("px-3 py-1.5 rounded-lg text-xs font-medium border transition-all", branch === b ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/30")}
+                data-testid={`filter-branch-${b.toLowerCase()}`}
+              >
+                {b}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            {JOB_TYPES.map(t => (
+              <button
+                key={t}
+                onClick={() => setJobType(t)}
+                className={cn("px-3 py-1.5 rounded-lg text-xs font-medium border transition-all capitalize", jobType === t ? "border-accent bg-accent/10 text-accent" : "border-border text-muted-foreground hover:border-accent/30")}
+                data-testid={`filter-type-${t}`}
+              >
+                {t}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -242,15 +159,14 @@ export default function StudentJobs() {
           <div className="grid md:grid-cols-2 gap-4">
             {[...Array(6)].map((_, i) => <div key={i} className="h-48 rounded-2xl bg-card animate-pulse" />)}
           </div>
-        ) : processedJobs.length > 0 ? (
+        ) : filtered.length > 0 ? (
           <div className="grid md:grid-cols-2 gap-4">
-            {processedJobs.map((job) => (
+            {filtered.map((job) => (
               <JobCard
                 key={job.id}
-                job={job as Record<string, unknown>}
+                job={job as any}
                 onApply={handleApply}
                 applying={applyingId === job.id}
-                matchScore={(job as any)._matchScore}
               />
             ))}
           </div>

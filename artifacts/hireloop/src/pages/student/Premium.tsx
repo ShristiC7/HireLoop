@@ -47,48 +47,28 @@ export default function StudentPremium() {
   const [loading, setLoading] = useState(false);
   const [transactionId, setTransactionId] = useState("");
 
-  const [card, setCard] = useState({ number: "", expiry: "", cvv: "", name: "" });
-
-  const plan = plans.find(p => p.id === selectedPlan)!;
-
-  const formatCardNumber = (val: string) =>
-    val.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
-
-  const formatExpiry = (val: string) => {
-    const digits = val.replace(/\D/g, "").slice(0, 4);
-    if (digits.length >= 3) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-    return digits;
-  };
-
   const handlePay = async () => {
-    if (!card.number || !card.expiry || !card.cvv || !card.name) {
-      toast({ title: "Please fill all card details", variant: "destructive" });
-      return;
-    }
     setLoading(true);
     try {
-      const res = await fetch(`${BASE}/api/payments/process`, {
+      const res = await fetch(`${BASE}/api/payments/create-checkout-session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          type: selectedPlan,
-          cardNumber: card.number,
-          cardExpiry: card.expiry,
-          cardCvv: card.cvv,
-          cardName: card.name,
-        }),
+        body: JSON.stringify({ type: selectedPlan }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Payment failed");
-      setTransactionId(data.transactionId);
-      setStep("success");
+      if (!res.ok) throw new Error(data.error ?? "Failed to initialize payment");
+      
+      // Redirect to Stripe checkout
+      window.location.href = data.url;
     } catch (err: unknown) {
       toast({ title: err instanceof Error ? err.message : "Payment failed", variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
+
+
 
   return (
     <DashboardLayout requiredRole="student">
@@ -153,100 +133,12 @@ export default function StudentPremium() {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => setStep("card")}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-primary to-cyan-500 text-white rounded-xl font-semibold"
+              onClick={handlePay}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-primary to-cyan-500 text-white rounded-xl font-semibold disabled:opacity-60"
             >
-              <Star size={16} /> Continue to Payment <ArrowRight size={16} />
+              <Star size={16} /> {loading ? "Redirecting..." : "Checkout securely with Stripe"} <ArrowRight size={16} />
             </motion.button>
-          </motion.div>
-        )}
-
-        {step === "card" && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold font-serif">Card Details</h1>
-              <p className="text-muted-foreground text-sm mt-1">{plan.label} plan · ₹{plan.price}/{plan.duration}</p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-card border border-card-border space-y-4">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                <Lock size={12} /> Secure payment simulation
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">Card Number</label>
-                <div className="relative">
-                  <input
-                    value={card.number}
-                    onChange={e => setCard({ ...card, number: formatCardNumber(e.target.value) })}
-                    placeholder="1234 5678 9012 3456"
-                    className="w-full bg-secondary/30 border border-border rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
-                    maxLength={19}
-                  />
-                  <CreditCard size={16} className="absolute right-3 top-3.5 text-muted-foreground" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">Expiry</label>
-                  <input
-                    value={card.expiry}
-                    onChange={e => setCard({ ...card, expiry: formatExpiry(e.target.value) })}
-                    placeholder="MM/YY"
-                    className="w-full bg-secondary/30 border border-border rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
-                    maxLength={5}
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">CVV</label>
-                  <input
-                    value={card.cvv}
-                    onChange={e => setCard({ ...card, cvv: e.target.value.replace(/\D/g, "").slice(0, 3) })}
-                    placeholder="123"
-                    className="w-full bg-secondary/30 border border-border rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
-                    maxLength={3}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">Cardholder Name</label>
-                <input
-                  value={card.name}
-                  onChange={e => setCard({ ...card, name: e.target.value })}
-                  placeholder="Your Name"
-                  className="w-full bg-secondary/30 border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border text-sm">
-              <span className="text-muted-foreground">Total Amount</span>
-              <span className="text-xl font-bold">₹{plan.price}</span>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setStep("plans")}
-                className="flex-1 py-3 border border-border rounded-xl text-sm font-medium hover:bg-secondary/30 transition-colors"
-              >
-                Back
-              </button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handlePay}
-                disabled={loading}
-                className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-xl font-semibold disabled:opacity-60"
-              >
-                {loading ? (
-                  <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Processing...</>
-                ) : (
-                  <><Lock size={14} /> Pay ₹{plan.price}</>
-                )}
-              </motion.button>
-            </div>
           </motion.div>
         )}
 
@@ -271,14 +163,21 @@ export default function StudentPremium() {
             </div>
 
             <div className="p-4 rounded-xl bg-secondary/30 border border-border text-left space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Plan</span>
-                <span className="font-semibold capitalize">{plan.label}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Amount Paid</span>
-                <span className="font-semibold">₹{plan.price}</span>
-              </div>
+              {(() => {
+                const plan = plans.find(p => p.id === selectedPlan);
+                return (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Plan</span>
+                      <span className="font-semibold capitalize">{plan?.label}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Amount Paid</span>
+                      <span className="font-semibold">₹{plan?.price}</span>
+                    </div>
+                  </>
+                );
+              })()}
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Transaction ID</span>
                 <span className="font-mono text-xs text-primary">{transactionId}</span>

@@ -132,57 +132,6 @@ export default function StudentDashboard() {
               <StatCard label="Offers" value={dashboard?.offers ?? 0} icon={TrendingUp} color="bg-green-500" />
             </div>
 
-            {/* Career Path Predictions */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {(dashboard as any)?.careerPathPredictions?.map((path: any, i: number) => (
-                <motion.div
-                  key={path.title}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="p-5 rounded-2xl bg-card border border-card-border hover:border-primary/40 transition-all group overflow-hidden relative"
-                >
-                  <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <Zap size={40} className="rotate-12" />
-                  </div>
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="font-bold text-sm tracking-tight">{path.title}</h3>
-                    <span className={cn(
-                      "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border",
-                      {
-                        "text-green-500 border-green-500/20 bg-green-500/5": path.relevance === "high",
-                        "text-amber-500 border-amber-500/20 bg-amber-500/5": path.relevance === "medium",
-                        "text-muted-foreground border-border bg-muted/5": path.relevance === "low"
-                      }
-                    )}>
-                      {path.relevance} Match
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">Compatibility</span>
-                      <span className="font-bold text-foreground">{path.match}%</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${path.match}%` }}
-                        className={cn("h-full", {
-                          "bg-primary": path.match >= 80,
-                          "bg-accent": path.match >= 50 && path.match < 80,
-                          "bg-muted-foreground": path.match < 50
-                        })}
-                      />
-                    </div>
-                    <button className="w-full mt-2 py-2 text-[10px] font-bold uppercase tracking-widest text-primary border border-primary/20 rounded-lg hover:bg-primary hover:text-white transition-all">
-                      View Next Steps
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
             <div className="grid lg:grid-cols-3 gap-6">
               {/* Recent Applications */}
               <div className="lg:col-span-2 space-y-4">

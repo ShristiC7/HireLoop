@@ -1,10 +1,11 @@
 import { Router, type IRouter } from "express";
-import { db, applicationsTable, studentsTable, jobsTable, recruitersTable } from "@workspace/db";
+import { db, applicationsTable, studentsTable, jobsTable, recruitersTable, usersTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { requireAuth, requireRole, type AuthRequest } from "../middlewares/auth";
 import { ApplyToJobBody, UpdateApplicationStatusBody, UpdateApplicationStatusParams, GetJobApplicationsParams } from "@workspace/api-zod";
-import { emitNotification } from "../lib/socket";
-import { usersTable } from "@workspace/db";
+import { sendEmail, applicationStatusEmail } from "../services/email";
+import { wsManager } from "../lib/wsManager";
+import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
@@ -51,7 +52,22 @@ router.post("/applications", requireAuth, requireRole("student"), async (req: Au
     status: "applied",
   }).returning();
 
-  res.status(201).json(await enrichApplication(app));
+  const enriched = await enrichApplication(app);
+
+  try {
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, req.userId!));
+    if (user && enriched.job) {
+      await sendEmail({
+        to: user.email,
+        subject: `Application Received: ${enriched.job.title} at ${enriched.job.company}`,
+        html: applicationStatusEmail("applied", enriched.job.title, enriched.job.company),
+      });
+    }
+  } catch (error) { 
+    logger.warn({ error }, "Failed to send application received email");
+  }
+
+  res.status(201).json(enriched);
 });
 
 router.put("/applications/:applicationId/status", requireAuth, async (req: AuthRequest, res): Promise<void> => {
@@ -83,18 +99,34 @@ router.put("/applications/:applicationId/status", requireAuth, async (req: AuthR
     .where(eq(applicationsTable.id, params.data.applicationId))
     .returning();
 
-  // Notify student in real-time
-  const [student] = await db.select().from(studentsTable).where(eq(studentsTable.id, updated.studentId));
-  if (student) {
-    const [job] = await db.select().from(jobsTable).where(eq(jobsTable.id, updated.jobId));
-    emitNotification(student.userId, {
-      title: "Application Status Update",
-      message: `Your application for ${job?.title || "a job"} has been updated to: ${parsed.data.status.toUpperCase()}`,
-      type: parsed.data.status === "rejected" ? "default" : "urgent",
-    });
+  const enriched = await enrichApplication(updated);
+
+  try {
+    const [student] = await db.select().from(studentsTable).where(eq(studentsTable.id, updated.studentId));
+    if (student) {
+      const [user] = await db.select().from(usersTable).where(eq(usersTable.id, student.userId));
+      if (user && enriched.job) {
+        if (wsManager) {
+          wsManager.broadcastToUser(user.id, {
+            type: "APPLICATION_STATUS_UPDATE",
+            applicationId: enriched.id,
+            jobTitle: enriched.job.title,
+            company: enriched.job.company,
+            status: parsed.data.status,
+          });
+        }
+        await sendEmail({
+          to: user.email,
+          subject: `Application Update: ${enriched.job.title} at ${enriched.job.company}`,
+          html: applicationStatusEmail(parsed.data.status, enriched.job.title, enriched.job.company),
+        });
+      }
+    }
+  } catch (error) {
+    logger.warn({ error, applicationId: updated.id }, "Failed to send application status update email");
   }
 
-  res.json(await enrichApplication(updated));
+  res.json(enriched);
 });
 
 router.get("/jobs/:jobId/applications", requireAuth, requireRole("recruiter"), async (req: AuthRequest, res): Promise<void> => {
@@ -121,30 +153,9 @@ router.get("/jobs/:jobId/applications", requireAuth, requireRole("recruiter"), a
   const apps = await appsQuery;
   const enriched = await Promise.all(apps.map(async (app) => {
     const [student] = await db.select().from(studentsTable).where(eq(studentsTable.id, app.studentId));
-    const [job] = await db.select().from(jobsTable).where(eq(jobsTable.id, app.jobId));
-    
-    // Calculate Match Score for Recruiter view
-    let matchScore = 0;
-    if (student && job) {
-      // 1. Skill Overlap (50%)
-      if (job.skills.length > 0) {
-        const studentSkills = new Set(student.skills.map(s => s.toLowerCase()));
-        const overlap = job.skills.filter(s => studentSkills.has(s.toLowerCase())).length;
-        matchScore += Math.round((overlap / job.skills.length) * 50);
-      } else matchScore += 25;
-
-      // 2. CGPA (30%)
-      if (student.cgpa >= job.minCgpa) matchScore += 30;
-      else if (student.cgpa >= job.minCgpa - 1) matchScore += 15;
-
-      // 3. Branch (20%)
-      if (job.eligibleBranches.includes(student.branch) || job.eligibleBranches.includes("All")) matchScore += 20;
-    }
-
     return {
       ...app,
       student: student ? { ...student, totalApplications: 0, shortlisted: 0, offers: 0 } : undefined,
-      matchScore: Math.min(matchScore, 100),
     };
   }));
 

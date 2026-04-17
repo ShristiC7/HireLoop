@@ -2,12 +2,14 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useListJobs, useGetJobApplications, useUpdateApplicationStatus, getListJobsQueryKey } from "@workspace/api-client-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { Briefcase, Users, ChevronDown, ChevronUp, Plus, Clock, Calendar, Search, X } from "lucide-react";
+import { Briefcase, Users, ChevronDown, ChevronUp, Plus, Clock, Calendar, Search, X, Sparkles, Bot, CheckCircle, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow, format } from "date-fns";
 import { Link } from "wouter";
+
+const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "") + "/api";
 
 const APPLICATION_STATUSES = ["applied", "shortlisted", "interview", "offer", "rejected"] as const;
 const statusColors: Record<string, string> = {
@@ -118,23 +120,142 @@ function InterviewScheduleModal({
   );
 }
 
+interface ShortlistResult {
+  applicationId: number;
+  studentName: string;
+  matchScore: number;
+  recommendation: string;
+  reason: string;
+}
+
+function SmartShortlistModal({ jobId, jobTitle, onClose }: { jobId: number; jobTitle: string; onClose: () => void }) {
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<ShortlistResult[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const runShortlist = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch(`${API_BASE}/ai/smart-shortlist/${jobId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to shortlist");
+      const data = await res.json();
+      setResults(data.shortlist ?? []);
+      toast({ title: "AI shortlisting complete!" });
+    } catch {
+      setError("AI shortlisting failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        onClick={e => e.stopPropagation()}
+        className="w-full max-w-lg bg-card border border-card-border rounded-2xl p-6 space-y-5 max-h-[80vh] overflow-y-auto"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold flex items-center gap-2"><Sparkles size={16} className="text-primary" /> AI Smart Shortlist</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">{jobTitle}</p>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
+        </div>
+
+        {!results && !loading && (
+          <div className="space-y-4">
+            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
+              <p className="text-sm text-muted-foreground">AI will analyze all applicants for this job and rank them by fit score, matching their skills and experience to the job requirements.</p>
+            </div>
+            <button
+              onClick={runShortlist}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-primary to-accent text-white rounded-xl text-sm font-semibold"
+            >
+              <Bot size={16} /> Run AI Shortlisting
+            </button>
+          </div>
+        )}
+
+        {loading && (
+          <div className="flex flex-col items-center py-10 gap-4">
+            <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+            <p className="text-sm text-muted-foreground">Analyzing {jobTitle} applicants...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20">
+            <AlertCircle size={16} className="text-destructive" />
+            <p className="text-sm text-destructive">{error}</p>
+          </div>
+        )}
+
+        {results && (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">{results.length} applicants ranked by AI match score</p>
+            {results.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-6">No applicants to shortlist yet</p>
+            ) : (
+              results.map((r, i) => (
+                <div key={r.applicationId} className={cn("p-4 rounded-xl border", r.recommendation === "shortlist" ? "border-green-500/20 bg-green-500/5" : r.recommendation === "consider" ? "border-amber-500/20 bg-amber-500/5" : "border-border bg-secondary/20")}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-muted-foreground">#{i + 1}</span>
+                      <span className="font-semibold text-sm">{r.studentName}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={cn("text-xs font-bold", r.matchScore >= 75 ? "text-green-500" : r.matchScore >= 50 ? "text-amber-500" : "text-muted-foreground")}>
+                        {r.matchScore}% match
+                      </span>
+                      <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium capitalize", r.recommendation === "shortlist" ? "bg-green-500/15 text-green-500" : r.recommendation === "consider" ? "bg-amber-500/15 text-amber-500" : "bg-muted text-muted-foreground")}>
+                        {r.recommendation}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{r.reason}</p>
+                </div>
+              ))
+            )}
+            <button onClick={runShortlist} className="w-full text-xs text-primary hover:underline py-2">Re-run analysis</button>
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function JobRow({ job }: { job: Record<string, unknown> }) {
   const [expanded, setExpanded] = useState(false);
   const [filter, setFilter] = useState<string>("all");
   const [skillFilter, setSkillFilter] = useState("");
   const [scheduleModal, setScheduleModal] = useState<{ appId: number; studentName: string } | null>(null);
+  const [shortlistModal, setShortlistModal] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const j = job as { id: number; title: string; company: string; status: string; jobType: string; applicantCount: number; deadline: string };
 
-  const { data: applications, isLoading } = useGetJobApplications(j.id, {}, { query: { enabled: expanded } });
+  const { data: applications, isLoading } = useGetJobApplications(j.id, {}, { query: { enabled: expanded, queryKey: [j.id, "applications"] } });
   const updateStatus = useUpdateApplicationStatus();
 
   const filtered = (applications ?? []).filter(a => {
     if (!a) return false;
     if (filter !== "all" && a.status !== filter) return false;
     if (skillFilter) {
-      const studentSkills = (a.student as Record<string, unknown>)?.skills as string[] ?? [];
+      const studentSkills = (a.student as any)?.skills as string[] ?? [];
       return studentSkills.some(s => s.toLowerCase().includes(skillFilter.toLowerCase()));
     }
     return true;
@@ -143,7 +264,7 @@ function JobRow({ job }: { job: Record<string, unknown> }) {
   const handleStatusChange = (appId: number, status: string, currentStatus: string) => {
     if (status === "interview" && currentStatus !== "interview") {
       const app = (applications ?? []).find(a => a?.id === appId);
-      const name = (app?.student as Record<string, unknown>)?.name as string ?? "Candidate";
+      const name = (app?.student as any)?.name as string ?? "Candidate";
       setScheduleModal({ appId, studentName: name });
       return;
     }
@@ -218,6 +339,13 @@ function JobRow({ job }: { job: Record<string, unknown> }) {
                     {s} {s === "all" ? `(${(applications ?? []).length})` : `(${(applications ?? []).filter(a => a?.status === s).length})`}
                   </button>
                 ))}
+                <button
+                  onClick={() => setShortlistModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 transition-all ml-auto"
+                  data-testid="button-ai-shortlist"
+                >
+                  <Sparkles size={11} /> AI Shortlist
+                </button>
               </div>
               <div className="relative">
                 <Search size={12} className="absolute left-3 top-2.5 text-muted-foreground" />
@@ -279,17 +407,6 @@ function JobRow({ job }: { job: Record<string, unknown> }) {
                         </div>
                       </div>
                       <div className="flex items-center gap-3 shrink-0 ml-3">
-                        <div className={cn(
-                          "flex flex-col items-center justify-center w-12 h-12 rounded-xl border",
-                          {
-                            "bg-green-500/10 border-green-500/20 text-green-400": (app as any).matchScore >= 80,
-                            "bg-amber-500/10 border-amber-500/20 text-amber-400": (app as any).matchScore >= 50 && (app as any).matchScore < 80,
-                            "bg-secondary border-border text-muted-foreground": (app as any).matchScore < 50
-                          }
-                        )} title="Compatibility Match Score">
-                          <span className="text-[10px] uppercase font-bold opacity-70">Match</span>
-                          <span className="text-sm font-bold">{(app as any).matchScore}%</span>
-                        </div>
                         <select
                           value={app.status}
                           onChange={(e) => handleStatusChange(app.id, e.target.value, app.status)}
@@ -315,6 +432,13 @@ function JobRow({ job }: { job: Record<string, unknown> }) {
             studentName={scheduleModal.studentName}
             onClose={() => setScheduleModal(null)}
             onSchedule={handleScheduleInterview}
+          />
+        )}
+        {shortlistModal && (
+          <SmartShortlistModal
+            jobId={j.id}
+            jobTitle={j.title}
+            onClose={() => setShortlistModal(false)}
           />
         )}
       </AnimatePresence>
@@ -356,7 +480,7 @@ export default function RecruiterJobs() {
         ) : (
           <div className="space-y-4">
             {(jobs ?? []).map(job => (
-              <JobRow key={job.id} job={job as Record<string, unknown>} />
+              <JobRow key={job.id} job={job as any} />
             ))}
           </div>
         )}

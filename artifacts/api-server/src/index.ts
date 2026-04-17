@@ -1,27 +1,20 @@
+import "dotenv/config";
 import app from "./app";
-import { createServer } from "http";
-import { initSocket } from "./lib/socket";
 import { logger } from "./lib/logger";
 
-const rawPort = process.env["PORT"];
-
-if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
-}
-
+const rawPort = process.env["PORT"] || "3001";
 const port = Number(rawPort);
 
 if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-const httpServer = createServer(app);
+import http from "http";
+import { initializeWebSocket } from "./lib/wsManager";
 
-// Initialize Socket.io
-initSocket(httpServer);
+const server = http.createServer(app);
+initializeWebSocket(server);
 
-httpServer.listen(port, () => {
-  logger.info({ port }, "Server listening (HTTP + WebSocket)");
+server.listen(port, () => {
+  logger.info({ port }, "Server listening");
 });

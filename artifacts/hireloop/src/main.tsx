@@ -1,9 +1,10 @@
 import { createRoot } from "react-dom/client";
-import { setBaseUrl } from "@workspace/api-client-react";
 import App from "./App";
 import "./index.css";
+import { setBaseUrl, setAuthTokenGetter } from "@workspace/api-client-react";
 
-// Initialize API client with the backend URL from environment
-setBaseUrl(import.meta.env.VITE_API_URL || "");
+// Initialize API client
+setBaseUrl(""); // Use empty string to let the dev/prod proxy handle it
+setAuthTokenGetter(() => localStorage.getItem("hl_token"));
 
 createRoot(document.getElementById("root")!).render(<App />);

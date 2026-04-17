@@ -160,6 +160,7 @@ export const GetResumeResponse = zod.object({
   ),
   certifications: zod.array(zod.string()),
   languages: zod.array(zod.string()),
+  skills: zod.array(zod.string()).optional(),
   atsScore: zod.number().optional(),
   lastUpdated: zod.coerce.date().optional(),
 });
@@ -201,6 +202,7 @@ export const UpdateResumeBody = zod.object({
     .optional(),
   certifications: zod.array(zod.string()).optional(),
   languages: zod.array(zod.string()).optional(),
+  skills: zod.array(zod.string()).optional(),
 });
 
 export const UpdateResumeResponse = zod.object({

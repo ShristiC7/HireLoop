@@ -44,7 +44,7 @@ const roles = [
     border: "border-chart-3/20",
     badge: "text-chart-3",
     features: ["Monitor all placements", "Approve companies", "Generate analytics reports", "Manage announcements"],
-    href: "/login",
+    href: "/admin-login",
   },
 ];
 

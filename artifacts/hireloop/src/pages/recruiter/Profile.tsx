@@ -29,7 +29,7 @@ export default function RecruiterProfile() {
   const queryClient = useQueryClient();
 
   const form = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema as any),
     defaultValues: { name: "", company: "", designation: "", phone: "", website: "" },
   });
 

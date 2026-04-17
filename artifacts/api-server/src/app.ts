@@ -3,8 +3,8 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
-import { db } from "@workspace/db";
-import { sql } from "drizzle-orm";
+import helmet from "helmet";
+import { generalRateLimiter } from "./middlewares/rateLimiter";
 
 const app: Express = express();
 
@@ -27,41 +27,48 @@ app.use(
     },
   }),
 );
-app.use(cors());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        "script-src": ["'self'", "'unsafe-inline'", "https://accounts.google.com/gsi/client"],
+        "frame-src": ["'self'", "https://accounts.google.com/gsi/"],
+        "connect-src": ["'self'", "https://accounts.google.com/gsi/"],
+      },
+    },
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  })
+);
+app.use(cors({
+  origin: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : "*",
+  credentials: true,
+}));
+app.use(generalRateLimiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/api/debug/db-info", async (_req, res) => {
-  try {
-    const tables = await db.execute(sql`
-      SELECT tablename, schemaname 
-      FROM pg_catalog.pg_tables 
-      WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
-    `);
-    res.json({ 
-      database: "connected",
-      tables: tables.rows,
-      environment: process.env.NODE_ENV
-    });
-  } catch (err) {
-    const pgError = err as { code?: string; message?: string };
-    res.status(500).json({ 
-      database: "error", 
-      message: pgError.message, 
-      code: pgError.code 
-    });
-  }
-});
+import path from "path";
+import { fileURLToPath } from "url";
 
-app.get("/", (_req, res) => {
-  res.json({ message: "HireLoop API Server is running" });
-});
-
-app.get("/api", (_req, res) => {
-  res.json({ message: "Welcome to HireLoop API", status: "online", endpoints: { health: "/api/healthz" } });
-});
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use("/api", router);
 
+// Serve static frontend files in production
+const frontendPath = path.join(__dirname, "../../hireloop/dist/public");
+app.use(express.static(frontendPath));
+
+// Handle SPAs by serving index.html for unknown routes
+app.get("*path", (req, res) => {
+  if (req.url.startsWith("/api")) return;
+  res.sendFile(path.join(frontendPath, "index.html"), (err) => {
+    if (err) {
+      // If index.html is missing, we just skip (likely in dev mode)
+      res.status(404).send("Frontend build not found. Run 'pnpm run build' first.");
+    }
+  });
+});
 
 export default app;

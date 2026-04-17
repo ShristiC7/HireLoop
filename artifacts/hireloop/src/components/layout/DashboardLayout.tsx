@@ -1,8 +1,7 @@
 import { type ReactNode, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
-import Sidebar from "./Sidebar";
-import MobileBottomNav from "./MobileBottomNav";
+import Sidebar, { MobileBottomNav } from "./Sidebar";
 import { motion } from "framer-motion";
 
 interface Props {
@@ -38,10 +37,8 @@ export default function DashboardLayout({ children, requiredRole }: Props) {
   if (!user) return null;
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden relative">
-      <div className="hidden md:block">
-        <Sidebar />
-      </div>
+    <div className="flex h-screen bg-background overflow-hidden">
+      <Sidebar />
       <motion.main
         key="dashboard-main"
         initial={{ opacity: 0, x: 10 }}
@@ -49,11 +46,11 @@ export default function DashboardLayout({ children, requiredRole }: Props) {
         transition={{ duration: 0.2 }}
         className="flex-1 overflow-y-auto"
       >
-        <div className="min-h-full p-4 md:p-6 pb-24 md:pb-6">
+        <div className="min-h-full p-4 md:p-6 pb-20 md:pb-6">
           {children}
         </div>
       </motion.main>
-      <MobileBottomNav role={user.role} />
+      <MobileBottomNav />
     </div>
   );
 }
