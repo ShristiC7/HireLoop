@@ -53,9 +53,9 @@ export default function AdminRecruiters() {
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center"><Building size={18} className="text-amber-400" /></div>
                       <div>
-                        <p className="font-semibold">{r.companyName}</p>
+                        <p className="font-semibold">{r.company}</p>
                         <p className="text-sm text-muted-foreground">{r.name} · {r.email}</p>
-                        {r.companyWebsite && <a href={r.companyWebsite} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">{r.companyWebsite}</a>}
+                        {r.website && <a href={r.website} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">{r.website}</a>}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -106,7 +106,7 @@ export default function AdminRecruiters() {
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center"><Building size={16} className="text-green-400" /></div>
                     <div>
-                      <p className="font-semibold text-sm">{r.companyName}</p>
+                      <p className="font-semibold text-sm">{r.company}</p>
                       <p className="text-xs text-muted-foreground">{r.name} · {r.email}</p>
                     </div>
                   </div>

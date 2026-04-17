@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const ROLES = ["Software Engineer", "Data Scientist", "Product Manager", "Frontend Developer", "Backend Developer", "Full Stack Developer", "DevOps Engineer", "Machine Learning Engineer"];
-const LEVELS = ["fresher", "experienced", "senior"];
+const LEVELS = ["fresher", "junior", "mid"];
 const FILLER_WORDS = ["um", "uh", "like", "you know", "basically", "literally", "actually", "so", "right", "okay", "well"];
 
 interface Message { role: "bot" | "user"; content: string; feedback?: string; score?: number; }
@@ -108,7 +108,7 @@ export default function AIInterview() {
 
   const startInterview = useStartMockInterview();
   const submitAnswer = useSubmitInterviewAnswer();
-  const { data: summary } = useGetInterviewSummary(viewSummaryId ?? "", { query: { enabled: !!viewSummaryId } });
+  const { data: summary } = useGetInterviewSummary(viewSummaryId ?? "", { query: { enabled: !!viewSummaryId, queryKey: ["interview-summary", viewSummaryId] } });
   const { data: sessions } = useListInterviewSessions();
 
   useEffect(() => {
@@ -181,7 +181,7 @@ export default function AIInterview() {
   }, [answer, toast]);
 
   const handleStart = () => {
-    startInterview.mutate({ data: { role, level: level as "fresher" | "experienced" | "senior" } }, {
+    startInterview.mutate({ data: { role, level: level as any } }, {
       onSuccess: (data) => {
         setSessionId(data.sessionId);
         setCurrentQuestion(data.currentQuestion ?? null);

@@ -163,14 +163,21 @@ export default function StudentPremium() {
             </div>
 
             <div className="p-4 rounded-xl bg-secondary/30 border border-border text-left space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Plan</span>
-                <span className="font-semibold capitalize">{plan.label}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Amount Paid</span>
-                <span className="font-semibold">₹{plan.price}</span>
-              </div>
+              {(() => {
+                const plan = plans.find(p => p.id === selectedPlan);
+                return (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Plan</span>
+                      <span className="font-semibold capitalize">{plan?.label}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Amount Paid</span>
+                      <span className="font-semibold">₹{plan?.price}</span>
+                    </div>
+                  </>
+                );
+              })()}
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Transaction ID</span>
                 <span className="font-mono text-xs text-primary">{transactionId}</span>

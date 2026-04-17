@@ -248,7 +248,7 @@ function JobRow({ job }: { job: Record<string, unknown> }) {
   const queryClient = useQueryClient();
   const j = job as { id: number; title: string; company: string; status: string; jobType: string; applicantCount: number; deadline: string };
 
-  const { data: applications, isLoading } = useGetJobApplications(j.id, {}, { query: { enabled: expanded } });
+  const { data: applications, isLoading } = useGetJobApplications(j.id, {}, { query: { enabled: expanded, queryKey: [j.id, "applications"] } });
   const updateStatus = useUpdateApplicationStatus();
 
   const filtered = (applications ?? []).filter(a => {
