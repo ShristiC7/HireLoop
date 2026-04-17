@@ -169,7 +169,7 @@ export default function StudentProfile() {
   const queryClient = useQueryClient();
 
   const form = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema as any),
     defaultValues: { name: "", phone: "", branch: "CSE", batch: "2025", cgpa: 0, bio: "", linkedinUrl: "", githubUrl: "", skills: [] },
   });
 

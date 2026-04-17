@@ -26,7 +26,7 @@ export default function AdminLogin() {
   const loginMutation = useLogin();
 
   const form = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema as any),
     defaultValues: { email: "", password: "" },
   });
 
