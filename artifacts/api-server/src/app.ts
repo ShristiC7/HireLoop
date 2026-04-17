@@ -36,6 +36,27 @@ app.use(generalRateLimiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 app.use("/api", router);
+
+// Serve static frontend files in production
+const frontendPath = path.join(__dirname, "../../hireloop/dist/public");
+app.use(express.static(frontendPath));
+
+// Handle SPAs by serving index.html for unknown routes
+app.get("*", (req, res) => {
+  if (req.url.startsWith("/api")) return;
+  res.sendFile(path.join(frontendPath, "index.html"), (err) => {
+    if (err) {
+      // If index.html is missing, we just skip (likely in dev mode)
+      res.status(404).send("Frontend build not found. Run 'pnpm run build' first.");
+    }
+  });
+});
 
 export default app;
