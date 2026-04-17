@@ -47,7 +47,7 @@ export default function PostJob() {
   }, []);
 
   const form = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema as any),
     defaultValues: {
       title: "", company: "", description: "", location: "", jobType: "fulltime",
       salaryMin: 0, salaryMax: 0, minCgpa: 6.0,
