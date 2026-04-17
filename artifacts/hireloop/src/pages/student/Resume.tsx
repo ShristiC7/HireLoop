@@ -5,7 +5,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Save, FileText, Briefcase, GraduationCap, Code, Award, Download } from "lucide-react";
+import { Plus, Trash2, Save, FileText, Briefcase, GraduationCap, Code, Award, Download, Sparkles, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 interface ExperienceEntry { title: string; company: string; duration: string; description: string; }
@@ -27,6 +27,32 @@ export default function ResumeBuilder() {
   const [certifications, setCertifications] = useState<string[]>([]);
   const [newCert, setNewCert] = useState("");
   const [activeSection, setActiveSection] = useState("summary");
+  const [isOptimizing, setIsOptimizing] = useState<string | null>(null);
+
+  const handleOptimize = async (content: string, section: string, callback: (optimized: string) => void) => {
+    if (!content || content.length < 10) {
+      toast({ title: "Content too short", description: "Please enter at least a few words to optimize.", variant: "destructive" });
+      return;
+    }
+    const id = `${section}-${Math.random()}`;
+    setIsOptimizing(id);
+    try {
+      const res = await fetch(`${BASE}/api/ai/optimize-resume-content`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content, section }),
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Optimization failed");
+      const { optimizedContent } = await res.json();
+      callback(optimizedContent);
+      toast({ title: "AI Optimization complete!" });
+    } catch {
+      toast({ title: "Optimization failed", variant: "destructive" });
+    } finally {
+      setIsOptimizing(null);
+    }
+  };
 
   useEffect(() => {
     if (resume) {
@@ -145,7 +171,17 @@ export default function ResumeBuilder() {
             <div className="p-5 rounded-2xl bg-card border border-card-border space-y-4">
               {activeSection === "summary" && (
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Professional Summary</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Professional Summary</label>
+                    <button
+                      onClick={() => handleOptimize(summary, "summary", setSummary)}
+                      disabled={!!isOptimizing}
+                      className="flex items-center gap-1.5 text-[10px] font-bold text-primary hover:text-primary/80 transition-colors bg-primary/5 px-2 py-1 rounded-md border border-primary/10"
+                    >
+                      {isOptimizing?.startsWith("summary") ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
+                      AI OPTIMIZE
+                    </button>
+                  </div>
                   <textarea
                     value={summary}
                     onChange={(e) => setSummary(e.target.value)}
@@ -171,7 +207,21 @@ export default function ResumeBuilder() {
                         <Input placeholder="Duration (e.g. Jun-Aug 2024)" value={exp.duration} onChange={e => { const u=[...experience]; u[i].duration=e.target.value; setExperience(u); }} className="text-sm col-span-2" />
                       </div>
                       <textarea rows={2} placeholder="Key responsibilities and achievements..." value={exp.description} onChange={e => { const u=[...experience]; u[i].description=e.target.value; setExperience(u); }} className="w-full bg-transparent border border-input rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-ring" />
-                      <button onClick={() => setExperience(experience.filter((_, j) => j !== i))} className="text-destructive text-xs flex items-center gap-1 hover:underline" data-testid={`button-delete-exp-${i}`}><Trash2 size={11} /> Remove</button>
+                      <div className="flex items-center justify-between">
+                        <button onClick={() => setExperience(experience.filter((_, j) => j !== i))} className="text-destructive text-xs flex items-center gap-1 hover:underline" data-testid={`button-delete-exp-${i}`}><Trash2 size={11} /> Remove</button>
+                        <button
+                          onClick={() => handleOptimize(exp.description, `experience-${i}`, (opt) => {
+                            const u = [...experience];
+                            u[i].description = opt;
+                            setExperience(u);
+                          })}
+                          disabled={!!isOptimizing}
+                          className="flex items-center gap-1.5 text-[9px] font-bold text-accent hover:text-accent/80 transition-colors bg-accent/5 px-2 py-1 rounded-md border border-accent/10"
+                        >
+                          {isOptimizing?.startsWith(`experience-${i}`) ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
+                          AI OPTIMIZE
+                        </button>
+                      </div>
                     </div>
                   ))}
                   {experience.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">No experience entries yet</p>}

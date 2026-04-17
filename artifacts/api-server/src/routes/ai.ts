@@ -6,6 +6,7 @@ import { AnalyzeResumeBody, StartMockInterviewBody, SubmitInterviewAnswerBody, S
 import { aiRateLimiter } from "../middlewares/rateLimiter";
 import OpenAI from "openai";
 import crypto from "crypto";
+import { z } from "zod";
 
 const router: IRouter = Router();
 
@@ -13,6 +14,11 @@ function sanitizeInput(str: string): string {
   if (!str) return "";
   return str.replace(/<[^>]*>?/gm, "").slice(0, 5000); // strip HTML and limit length
 }
+
+const OptimizeResumeContentBody = z.object({
+  content: z.string().min(10, "Minimum 10 characters required for optimization"),
+  section: z.string().optional(),
+});
 
 const openai = new OpenAI({
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
@@ -608,6 +614,33 @@ router.get("/ai/interview-sessions", requireAuth, requireRole("student"), async 
     completedAt: s.completedAt,
     overallScore: s.overallScore,
   })));
+});
+
+router.post("/ai/optimize-resume-content", requireAuth, requireRole("student"), aiRateLimiter, async (req: AuthRequest, res): Promise<void> => {
+  const parsed = OptimizeResumeContentBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  const { content, section = "experience" } = parsed.data;
+
+  const systemPrompt = `You are a professional resume writer and career coach.
+Your task is to rewrite the provided ${section} content to be more professional, impactful, and ATS-friendly.
+Guidelines:
+- Use strong action verbs (e.g., Developed, Managed, Spearheaded).
+- Quantify achievements if possible (e.g., increased efficiency by 20%).
+- Keep it concise and professional.
+- Return ONLY a JSON object with a single "optimizedContent" field.
+- If it's a list of experience points, ensure they are formatted as a cohesive professional description.`;
+
+  const result = await callAI(
+    systemPrompt,
+    `Content to optimize:\n${sanitizeInput(content)}`,
+    { optimizedContent: content }
+  ) as { optimizedContent: string };
+
+  res.json(result);
 });
 
 export default router;
