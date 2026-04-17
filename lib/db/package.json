@@ -8,8 +8,8 @@
     "./schema": "./src/schema/index.ts"
   },
   "scripts": {
-    "push": "node -r dotenv/config ../../node_modules/.bin/drizzle-kit push --config ./drizzle.config.ts dotenv_config_path=../../.env",
-    "seed:admin": "node -r dotenv/config ../../node_modules/.bin/tsx src/seedAdmin.ts dotenv_config_path=../../.env"
+    "push": "drizzle-kit push",
+    "seed:admin": "tsx src/seedAdmin.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
