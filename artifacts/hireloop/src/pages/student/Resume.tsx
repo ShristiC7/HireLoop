@@ -5,7 +5,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Save, FileText, Briefcase, GraduationCap, Code, Award, Download, Sparkles, Loader2 } from "lucide-react";
+import { Plus, Trash2, Save, FileText, Briefcase, GraduationCap, Code, Award, Download, Sparkles, Loader2, Target } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { customFetch } from "@workspace/api-client-react";
 
