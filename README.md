@@ -3,16 +3,16 @@
 
 HireLoop is a full-stack **AI-powered campus placement management platform** designed to streamline recruitment workflows between **students, recruiters, and college placement cells**.
 
-The platform digitizes the entire placement lifecycle — from resume creation and job applications to AI interview preparation and placement analytics — within a single ecosystem.
+The platform digitizes the entire placement lifecycle — from resume creation and job applications to AI interview preparation and placement analytics — within a single professional monorepo ecosystem.
 
 ---
 ## Team Details:
-Name: Universe of Innovation
+**Name**: Universe of Innovation
 
-| Member | Role  |
+| Member | Role |
 |------|----------------------|
-| Shubham  Verma |  Frontend  |
-| Shristi Choudhary |  Backend , Ai Integrations , Database |
+| **Shubham Verma** | Frontend Development |
+| **Shristi Choudhary** | Backend, AI Integrations, Database Architecture |
 
 ---
 ## 📌 Table of Contents
@@ -33,73 +33,47 @@ Name: Universe of Innovation
 
 ## 🧠 Overview
 
-**HireLoop** connects three stakeholders involved in campus hiring:
+**HireLoop** connects the three critical stakeholders in campus hiring:
 
-- 🎓 Students preparing for placements
-- 🏢 Companies recruiting talent
-- 🏫 Placement Cells managing recruitment
+- 🎓 **Students** preparing for placements and seeking opportunities.
+- 🏢 **Recruiters** seeking top talent with streamlined filtering.
+- 🏫 **Placement Cells** (Admin) managing recruiter approvals and tracking performance.
 
-It combines a traditional placement portal with modern AI features such as:
-
-- Resume analysis
-- Interview simulations
-- Job matching intelligence
-- Automated placement analytics
+The platform distinguishes itself by embedding **AI-driven intelligence** into the workflow, providing students with feedback tools that mirror real-world interview and screening processes.
 
 ---
 
 ## ✨ Key Features
 
 ### 👩‍🎓 Student Portal
-- Profile creation and management
-- Resume builder with downloadable PDF
-- AI Resume Analyzer (ATS scoring & suggestions)
-- One-click job applications
-- Application status tracking
-- AI Mock Interview preparation
-- Smart job recommendations
-- Cover letter auto-generation
-<img width="1915" height="991" alt="image" src="https://github.com/user-attachments/assets/672867d5-4259-4939-90c1-27953f3296f3" />
-
-
----
+- **Advanced Profile Management**: Track placement status and readiness.
+- **AI Resume Insights**: Get ATS scores and keyword gap analysis.
+- **AI Mock Interviews**: Realistic interview simulations with bot feedback.
+- **Smart Job Board**: Filter jobs by branch, type, and salary.
+- **Success Tracking**: Real-time status updates from "Applied" to "Offer".
+- **Premium Upgrades**: Unlock unlimited AI interview sessions via a sandbox payment gateway.
 
 ### 🏢 Recruiter Portal
-- Company registration & onboarding
-- Job posting with eligibility filters
-- Applicant filtering (skills, CGPA, branch)
-- Candidate shortlisting
-- Interview scheduling
-- Automated email notifications
-
-
----
+- **Streamlined Job Posting**: Post campus-specific jobs with CGPA and branch filters.
+- **AI Smart Shortlist**: Let AI rank candidates based on their skill match for a specific JD.
+- **Applicant Pipeline**: Manage candidates through Shortlist, Interview, and Offer stages.
+- **Interview Scheduling**: Integrated scheduling tools with automated notification logic.
+- **Listing Management**: One-time listing fee (Sandbox) to ensure high-quality campus postings.
 
 ### 🏫 Placement Cell Dashboard
-- Recruiter approval system
-- Placement analytics dashboard
-- Student placement statistics
-- Downloadable placement reports
-- Announcement board for students
-
----
-
-### 💳 Payments
-- Company job listing fee (sandbox payment)
-- Student premium subscription:
-  - Unlimited AI interviews
-  - Priority recruiter visibility
+- **Recruiter Governance**: Review and approve company registrations.
+- **Placement Analytics**: Monitor placement rates, highest packages, and branch-wise trends.
+- **Announcement Board**: Broadcast urgent updates to students and recruiters.
+- **Data Reports**: Generate comprehensive CSV/PDF reports on placement performance.
 
 ---
 
 ## 🤖 AI Capabilities
 
-- Resume ATS scoring
-- Resume ↔ Job Description matching
-- Keyword gap analysis
-- AI-generated cover letters
-- Mock interview evaluation & feedback
-- Smart job recommendation engine
+- **Resume ATS Analysis**: Scoring based on industry standard extraction.
+- **Smart Shortlisting**: Semantic matching between candidate profiles and job descriptions.
+- **AI Interview Bot**: Real-time speech-to-text or text-based interview simulations with scoring.
+- **Interview Feedback**: Granular breakdowns of communication and technical strengths/weaknesses.
 
 ---
 
@@ -107,189 +81,123 @@ It combines a traditional placement portal with modern AI features such as:
 
 | Layer | Technology |
 |------|------------|
-| Frontend | Next.js / React |
-| Styling | Tailwind CSS |
-| Backend | Node.js + Express |
-| Database | Supabse |
-| Authentication | JWT + Role-Based Access |
-| AI Integration | LLM APIs |
-| File Storage | Supabase |
-| Payments | Stripe / Razorpay Sandbox |
+| **Frontend** | React + Vite |
+| **Styling** | Vanilla CSS + Framer Motion |
+| **State Management** | TanStack Query v5 |
+| **Backend** | Node.js + Express |
+| **Database** | PostgreSQL + Drizzle ORM (Supabase) |
+| **Monorepo Tools** | pnpm Workspaces |
+| **API Client** | Orval (Generated TypeScript SDK) |
+| **Authentication** | JWT + Role-based Guards |
 
 ---
 
 ## 🏗 System Architecture
+
+```mermaid
+graph TD
+    User((Users)) --> Frontend[React Frontend - Vite]
+    Frontend --> API[Express API Server]
+    
+    subgraph "Monorepo Packages"
+        API --> DB_Lib[lib/db - Drizzle ORM]
+        API --> Zod_Lib[lib/api-zod - Schemas]
+        Frontend --> SDK[lib/api-client-react - Generated SDK]
+    end
+    
+    DB_Lib --> Supabase[(PostgreSQL - Supabase)]
+    API --> AI_Service[AI Processing Service]
+    AI_Service --> LLM[OpenAI / Gemini API]
+    API --> Payments[Stripe Sandbox]
 ```
 
-Client (Next.js)
-│
-▼
-Backend API (Node.js + Express)
-│
-├── Authentication Service
-├── Resume Service
-├── AI Processing Service
-├── Job & Application Service
-└── Payment Service
-│
-▼
-Database (Supabase)
-│
-▼
-AI APIs / External Services
-
-```
 ---
-## Architecture overview
-```
-┌─────────────────────────────────────────────────────────┐
-│                   Client Layer                          │
-│          Next.js 14 (App Router) + Tailwind CSS         │
-│    Student Portal │ Recruiter Portal │ Admin Dashboard  │
-└──────────────────────────┬──────────────────────────────┘
-                           │ HTTPS / REST
-┌──────────────────────────▼──────────────────────────────┐
-│                   API Gateway Layer                     │
-│          Node.js + Express   |   Rate Limiter           │
-│          JWT Middleware       |   Role Guard             │
-└──────┬───────────┬───────────┬───────────┬──────────────┘
-       │           │           │           │
-┌──────▼───┐ ┌────▼────┐ ┌───▼───┐ ┌────▼──────┐
-│ Auth     │ │ Student │ │ Job & │ │ AI        │
-│ Service  │ │ Service │ │ App   │ │ Service   │
-│          │ │         │ │ Svc   │ │           │
-└──────────┘ └─────────┘ └───────┘ └───────────┘
-       │           │           │           │
-┌──────▼───┐ ┌────▼────┐ ┌───▼───┐ ┌────▼──────┐
-│ Recruiter│ │ Resume  │ │Payment│ │ Admin     │
-│ Service  │ │ Service │ │ Svc   │ │ Service   │
-└──────────┘ └─────────┘ └───────┘ └───────────┘
-                           │
-              ┌────────────▼────────────┐
-              │     Data Layer          │
-              │  Supabase (Primary)   │
-              │  Redis (Cache/Sessions) │
-              └────────────┬────────────┘
-                           │
-              ┌────────────▼────────────┐
-              │   External Services     │
-              │  OpenAI API  │ Stripe   │
-              │  Cloud CDN   │ Nodemailer│
-              └─────────────────────────┘
 
- ```
 ## ⚙️ Installation
 
-### 1️⃣ Clone Repository
+### 1️⃣ Prerequisites
+- **Node.js**: v20 or higher
+- **pnpm**: v9 or higher
 
+### 2️⃣ Clone and Install
 ```bash
 git clone https://github.com/ShristiC7/HireLoop.git
 cd HireLoop
+pnpm install
 ```
-### 2️⃣ Install Dependencies
-Backend
 
+### 3️⃣ Local Development
+Run all services simultaneously:
 ```bash
-cd server
-npm install
-
+pnpm run dev
 ```
-Frontend
+*   **Frontend**: `http://localhost:5173`
+*   **Backend**: `http://localhost:3001`
 
-```bash
-cd client
-npm install
-
-```
-### 3️⃣ Run Development Servers
-
-Backend:
-
-```bash
-npm run dev
-
-```
-Frontend:
-
-```bash
-npm run dev
-
-```
 ---
-### 🔐 Environment Variables
 
-Create a .env file in the server directory:
+## 🔐 Environment Variables
+
+Create a `.env` file in the root directory (and relevant package directories):
 
 ```bash
-PORT=5000
-DATABASE_URL=
-JWT_SECRET=
-OPENAI_API_KEY=
-PAYMENT_SECRET_KEY=
-CLOUD_STORAGE_KEY=
+# Database
+DATABASE_URL=your_supabase_postgres_url
 
+# Security
+JWT_SECRET=your_jwt_secret
+
+# AI
+OPENAI_API_KEY=your_key_for_resume_analysis
+
+# Payments (Sandbox)
+STRIPE_SECRET_KEY=sk_test_...
+
+# URLs
+FRONTEND_URL=http://localhost:5173
 ```
+
 ---
-## 📁 Project Structure
-```
+
+## 📁 Project Structure (Monorepo)
+
+```text
 HireLoop/
-│
-├── client/                 # Frontend (Next.js)
-│   ├── components/
-│   ├── pages/
-│   ├── services/
-│   └── styles/
-│
-├── server/                 # Backend (Node.js)
-│   ├── controllers/
-│   ├── routes/
-│   ├── models/
-│   ├── middleware/
-│   ├── services/
-│   └── utils/
-│
-└── README.md
+├── artifacts/
+│   ├── hireloop/           # React Frontend (Vite)
+│   └── api-server/         # Express Backend Server
+├── lib/
+│   ├── db/                 # Shared Database Layer (Schematic/Drizzle)
+│   ├── api-zod/            # Shared Data Schemas (Zod)
+│   └── api-client-react/   # Generated React Hooks for API
+├── pnpm-workspace.yaml     # Workspace Configuration
+└── package.json            # Root Scripts (build, dev, typecheck)
 ```
+
 ---
+
 ## 🔌 API Modules
 
-- Authentication API  
-- Student Profile API  
-- Resume Builder API  
-- Job Management API  
-- Application Tracking API  
-- Interview Scheduling API  
-- AI Analysis API  
-- Payment API  
-- Admin Analytics API  
+- **Authentication**: JWT-based onboarding with role verification.
+- **Profiles**: Profile management for Students and Recruiters.
+- **Jobs**: Posting, filtering, and listing operations.
+- **Applications**: Full lifecycle tracking (applied, shortlisted, etc.).
+- **AI Tools**: Resume parsing and Mock Interview generation.
+- **Payments**: Stripe Checkout integration for listings and premium access.
+- **Admin**: Strategic insights and recruiter approval workflows.
 
 ---
+
 ## 🌐 Live Deployment
 
-🚀 Frontend: [https://hire-loop.onrender.com/](https://hire-loop.onrender.com/)
+🚀 **HireLoop**: [https://hireloop-gyzl.onrender.com/](https://hireloop-gyzl.onrender.com/)  
 
-⚙️ Backend:[ https://hireloop-api.onrender.com](https://hireloop-platform.onrender.com/)
 
----- 
-## ⚠️ Known Limitations
+---
 
-HireLoop is currently in active development and certain production-level integrations are still being stabilized.
-
-- 💳 Payment Gateway Integration Pending
-Razorpay integration is not fully connected yet. Payment flows are currently in sandbox/mock mode.
-- 🏫 Placement Cell Dashboard Stability Issues
-The admin/placement cell dashboard is partially non-functional and requires backend alignment for full feature execution.
-- 🤖 AI Question Generation Rate Limits
-AI-powered interview question generation may occasionally fail due to API rate limits or quota exhaustion under heavy usage.
-
------
 ## 🚀 Future Enhancements
 
-- Video interview analysis (AI)
-- Skill gap prediction engine
-- Multi-college SaaS support
-- Recruiter AI auto-shortlisting
-- Placement performance forecasting
-- Mobile application
-Placement performance forecasting
-Mobile application
+- **Video Analysis**: Using AI to analyze behavioral cues during interviews.
+- **Real-Time Notifications**: WebSocket-based alerts for shortlist updates.
+- **Skill Gap Prediction**: Personalized learning paths based on failed interviews.
+- **Campus Multi-Tenancy**: Support for multiple colleges within one platform.
