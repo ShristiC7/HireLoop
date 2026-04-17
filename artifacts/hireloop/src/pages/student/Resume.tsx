@@ -230,7 +230,7 @@ export default function ResumeBuilder() {
                       </div>
                     </div>
                   ))}
-                  {experience.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">No experience entries yet</p>}
+                  {experience?.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">No experience entries yet</p>}
                 </div>
               )}
 
@@ -324,7 +324,7 @@ export default function ResumeBuilder() {
               </div>
             )}
 
-            {experience.length > 0 && (
+            {experience?.length > 0 && (
               <div className="section mb-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-2">Experience</h3>
                 {experience.map((exp, i) => (
@@ -340,7 +340,7 @@ export default function ResumeBuilder() {
               </div>
             )}
 
-            {education.length > 0 && (
+            {education?.length > 0 && (
               <div className="section mb-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-2">Education</h3>
                 {education.map((edu, i) => (
@@ -352,21 +352,21 @@ export default function ResumeBuilder() {
               </div>
             )}
 
-            {projects.length > 0 && (
+            {projects?.length > 0 && (
               <div className="section mb-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-2">Projects</h3>
                 {projects.map((proj, i) => (
                   <div key={i} className="mb-2">
                     <p className="entry-title text-xs font-semibold">{proj.title}</p>
                     <p className="entry-desc text-xs text-gray-600">{proj.description}</p>
-                    {proj.tech.length > 0 && <p className="text-xs text-indigo-600 mt-0.5">{proj.tech.map((t, j) => <span key={j} className="tag">{t}</span>)}</p>}
+                    {proj.tech?.length > 0 && <p className="text-xs text-indigo-600 mt-0.5">{proj.tech.map((t, j) => <span key={j} className="tag text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">{t}</span>)}</p>}
                     {proj.link && <a href={proj.link} className="text-xs text-indigo-500">{proj.link}</a>}
                   </div>
                 ))}
               </div>
             )}
 
-            {skills.length > 0 && (
+            {skills?.length > 0 && (
               <div className="section mb-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-2">Technical Skills</h3>
                 <div className="flex flex-wrap gap-1">
@@ -375,7 +375,7 @@ export default function ResumeBuilder() {
               </div>
             )}
 
-            {certifications.length > 0 && (
+            {certifications?.length > 0 && (
               <div className="section">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-2">Certifications</h3>
                 <div className="flex flex-wrap gap-1">
