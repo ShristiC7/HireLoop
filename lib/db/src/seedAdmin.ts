@@ -21,7 +21,8 @@ async function main() {
   
   await db.insert(usersTable).values({
     email: adminEmail,
-    password: hashedPassword,
+    passwordHash: hashedPassword,
+    name: "System Admin",
     role: "admin",
   });
 
