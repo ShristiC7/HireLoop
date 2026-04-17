@@ -39,7 +39,7 @@ export default function AdminAnnouncements() {
       toast({ title: "Please fill in all fields", variant: "destructive" });
       return;
     }
-    createAnnouncement.mutate({ data: { title, content, type, targetRole: "all" } }, {
+    createAnnouncement.mutate({ data: { title, content, type } }, {
       onSuccess: () => {
         setTitle("");
         setContent("");

@@ -255,7 +255,7 @@ function JobRow({ job }: { job: Record<string, unknown> }) {
     if (!a) return false;
     if (filter !== "all" && a.status !== filter) return false;
     if (skillFilter) {
-      const studentSkills = (a.student as Record<string, unknown>)?.skills as string[] ?? [];
+      const studentSkills = (a.student as any)?.skills as string[] ?? [];
       return studentSkills.some(s => s.toLowerCase().includes(skillFilter.toLowerCase()));
     }
     return true;
@@ -264,7 +264,7 @@ function JobRow({ job }: { job: Record<string, unknown> }) {
   const handleStatusChange = (appId: number, status: string, currentStatus: string) => {
     if (status === "interview" && currentStatus !== "interview") {
       const app = (applications ?? []).find(a => a?.id === appId);
-      const name = (app?.student as Record<string, unknown>)?.name as string ?? "Candidate";
+      const name = (app?.student as any)?.name as string ?? "Candidate";
       setScheduleModal({ appId, studentName: name });
       return;
     }
@@ -480,7 +480,7 @@ export default function RecruiterJobs() {
         ) : (
           <div className="space-y-4">
             {(jobs ?? []).map(job => (
-              <JobRow key={job.id} job={job as Record<string, unknown>} />
+              <JobRow key={job.id} job={job as any} />
             ))}
           </div>
         )}

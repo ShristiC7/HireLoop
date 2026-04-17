@@ -164,7 +164,7 @@ export default function StudentJobs() {
             {filtered.map((job) => (
               <JobCard
                 key={job.id}
-                job={job as Record<string, unknown>}
+                job={job as any}
                 onApply={handleApply}
                 applying={applyingId === job.id}
               />
